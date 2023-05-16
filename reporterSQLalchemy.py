@@ -1,5 +1,5 @@
 import pandas as pd
-from sqlalchemy import create_engine,MetaData, Table, Column, Integer, String
+from sqlalchemy import create_engine,MetaData, Table, Column, Integer, String, text
 import pymysql
 import json
 
@@ -49,44 +49,101 @@ def executeInsert():
     dbConnection.commit()
     dbConnection.close()
 
+def executeSqlInsert(sqlInsert):
+    sqlEngine= get_connection(config)
+    dbConnection= sqlEngine.connect()
+    print('sql insert successful', dbConnection.execute(text(sqlInsert)))
+    dbConnection.commit()
+    dbConnection.close()
+
+
 def getAttribute(listItem, searchItem):
     for item in listItem:
         return item[searchItem]
     return "null"    
+
+def getNextVal(tableName, colName, prefixChar):
+    sqlNextVal = f""" (select mid({colName},length('{prefixChar}')+1)+1 from {tableName} order by CreatedON desc limit 1)
+                union ( select 1 ) limit 1 ;"""
+    #print(sqlNextVal)
+    sqlEngine= get_connection(config)
+    dbConnection= sqlEngine.connect()
+    result = dbConnection.execute(text(sqlNextVal)).fetchone()
+    dbConnection.close()
+    #print('getNextVal', int(result[0]))
+    #first row, first column
+    return int(result[0])
     
+def featureTable(executionData):
+    # Feature Table
+    clientId,sponsorId, applicationId,featureId,featureName = getAttribute(executionData, "description").split('~')
+    uri = getAttribute(executionData, "uri").replace("\\","\\\\")
+    description = getAttribute(executionData, "name")
+    sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}'"
+    result = executeSelect(sqlSelectFeature)
+    if len(result.index) > 0:
+        print('feature exists')
+    else:
+        featureId = 'F' + str(getNextVal('feature', 'featureid', 'F'))
+        sqlInsertFeature = f"""Insert into {config['database']}.feature 
+        (applicationId, featureid, FeatureName, description, uri, CreatedBy)
+        values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin')"""
+        #print("feature not exists")
+        print (sqlInsertFeature)
+        executeSqlInsert(sqlInsertFeature)
+    return featureId
+
+def featureExecutionTable(executionData,featureId):
+    df = pd.json_normalize(executionData,record_path='elements')
+    startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
+    featureExecutionId = 'FE' + str(getNextVal('featureExecution', 'featureExecutionId', 'FE'))
+    #featureId = 'F5'
+    tcDuration=1
+    totalScenario = df['steps'].count()
+    sqlInsertFeatureExecution = f"""Insert into {config['database']}.featureexecution 
+    (FeatureExecutionId, featureid, Duration, TotalScenario, StartTime, CreatedBy)
+    values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin')"""
+    #print("feature not exists")
+    #print (sqlInsertFeature)
+    executeSqlInsert(sqlInsertFeatureExecution)
+    return featureExecutionId
+        
+
 if __name__ == '__main__':
     try:
-        executeInsert()
+        #executeInsert()
+        
         sqlQuery= "select clientID, ClientName from client where clientId='C3'"
         print(executeSelect(sqlQuery))
         #df = pd.read_json('results.json')
         
         
 # read the file
-        data = json.load(open('results.json'))
-        clientId,sponsorId, applicationId,featureId,featureName = getAttribute(data, "description").split('~')
-        uri = getAttribute(data, "uri")
-        sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}'"
-        result = executeSelect(sqlSelectFeature)
-        if len(result.index) > 0:
-            print('feature exists')
-        else:
-            sqlInsertFeature = f"""Insert into {config['database']}.feature 
-            (applicationId, FeatureId,FeatureName, uri, CreatedBy)
-            values ('{applicationId}', '{featureId}','{featureName}','{uri}','infoOrigin')"""
-            print("feature not exists")
-            print (sqlInsertFeature)
+        executionData = json.load(open('results.json'))
+        featureId = featureTable(executionData)
+        featureExecutionId = featureExecutionTable(executionData,featureId)
+        #print('featureId=', featureId)
+        
+
+
 # load into pandas
         #df = pd.json_normalize(data,"elements")
         
-        print('desc', )
-        df = pd.json_normalize(data,record_path='elements')
+        #print('desc', )
+        df = pd.json_normalize(executionData,record_path='elements')
         # df = (
         #         df["steps"]
         #         .apply(pd.Series)
         #         .merge(df, left_index=True, right_index = True)
         #     )
+        #print('duration=', df[df['steps']])
+        # print('duration=', [pd.DataFrame(i)['result']['duration'].sum() 
+        #                          for i in df['steps'].tolist()] )
         
+        #m = df['steps'].explode()
+        #df1= pd.DataFrame(m.tolist(),index=m.index)['result']
+        #df2= pd.DataFrame(df1['duration'].tolist(),index=df1['duration'].index)
+        #print(df2)
         for step in df['steps'].tolist():
             tcDuration = 0
             tcSteps = 0
