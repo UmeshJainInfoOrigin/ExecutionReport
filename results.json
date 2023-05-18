@@ -1,9 +1,9 @@
 [
   {
-    "description": "C1~S1~A1~F1~Form Validation",
+    "description": "C1~S1~A1~F5~MenuVerify",
     "elements": [
       {
-        "description": "",
+        "description": "InsideC1~S1~A1~F5~MenuVerify",
         "id": "verify-components-at-form-submenu;click-form-layout-menu-and-verify-1st-grid",
         "keyword": "Scenario",
         "line": 6,
@@ -19,7 +19,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 3267000000
+              "duration": 2628000000
             }
           },
           {
@@ -32,7 +32,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1808000000
+              "duration": 2029000000
             }
           },
           {
@@ -45,7 +45,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2751000000
+              "duration": 1436000000
             }
           },
           {
@@ -58,7 +58,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 4352000000
+              "duration": 2637000000
             }
           }
         ],
@@ -87,7 +87,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1482000000
+              "duration": 1059000000
             }
           },
           {
@@ -100,7 +100,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2106000000
+              "duration": 1438000000
             }
           },
           {
@@ -113,7 +113,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1361000000
+              "duration": 1168000000
             }
           },
           {
@@ -126,7 +126,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 669000000
+              "duration": 687000000
             }
           }
         ],
@@ -150,7 +150,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 915000000
+              "duration": 1179000000
             }
           },
           {
@@ -163,7 +163,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1131000000
+              "duration": 1308000000
             }
           },
           {
@@ -176,7 +176,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1239000000
+              "duration": 1325000000
             }
           },
           {
@@ -189,7 +189,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2736000000
+              "duration": 3621000000
             }
           }
         ],
@@ -218,7 +218,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 834000000
+              "duration": 1189000000
             }
           },
           {
@@ -231,7 +231,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1128000000
+              "duration": 1154000000
             }
           },
           {
@@ -244,7 +244,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1129000000
+              "duration": 1400000000
             }
           },
           {
@@ -257,7 +257,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 53000000
+              "duration": 475000000
             }
           }
         ],
@@ -281,7 +281,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 888000000
+              "duration": 1120000000
             }
           },
           {
@@ -294,7 +294,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 295000000
+              "duration": 429000000
             }
           },
           {
@@ -307,7 +307,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 3527000000
+              "duration": 4681000000
             }
           }
         ],
@@ -331,7 +331,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 849000000
+              "duration": 1302000000
             }
           },
           {
@@ -344,7 +344,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2895000000
+              "duration": 2566000000
             }
           },
           {
@@ -357,7 +357,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 7187000000
+              "duration": 6810000000
             }
           }
         ],
@@ -381,7 +381,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 875000000
+              "duration": 1354000000
             }
           },
           {
@@ -394,7 +394,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2203000000
+              "duration": 2241000000
             }
           },
           {
@@ -407,7 +407,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 534000000
+              "duration": 943000000
             }
           }
         ],
@@ -431,7 +431,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1032000000
+              "duration": 891000000
             }
           },
           {
@@ -444,7 +444,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2260000000
+              "duration": 2582000000
             }
           },
           {
@@ -457,7 +457,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2577000000
+              "duration": 2423000000
             }
           },
           {
@@ -470,7 +470,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 2567000000
+              "duration": 3310000000
             }
           },
           {
@@ -483,7 +483,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 1652000000
+              "duration": 1881000000
             }
           },
           {
@@ -496,7 +496,7 @@
             },
             "result": {
               "status": "passed",
-              "duration": 4891000000
+              "duration": 2816000000
             }
           }
         ],
@@ -510,5 +510,40 @@
     "name": "Verify components at Form Submenu",
     "tags": [],
     "uri": "cypress\\integration\\angularTestApp\\form.feature"
+  },
+  {
+    "description": "C1~S1~A1~F7~Smart Table",
+    "elements": [
+      {
+        "description": "",
+        "id": "verify-table&data-smart-table;select-item-from-dynamic-dropdown",
+        "keyword": "Scenario",
+        "line": 25,
+        "name": "Select item from dynamic dropdown",
+        "steps": [
+          {
+            "arguments": [],
+            "keyword": "Then ",
+            "line": 26,
+            "name": "Actor able to select item from dynamic dropdown",
+            "match": {
+              "location": "not available:0"
+            },
+            "result": {
+              "status": "passed",
+              "duration": 9667000000
+            }
+          }
+        ],
+        "tags": [],
+        "type": "scenario"
+      }
+    ],
+    "id": "verify-table&data-smart-table",
+    "line": 1,
+    "keyword": "Feature",
+    "name": "Verify Table&Data Smart Table",
+    "tags": [],
+    "uri": "cypress\\integration\\smartTable\\webTable.feature"
   }
 ]

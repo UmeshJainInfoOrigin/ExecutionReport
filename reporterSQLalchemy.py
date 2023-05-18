@@ -58,14 +58,18 @@ def executeSqlInsert(sqlInsert):
 
 
 def getAttribute(listItem, searchItem):
-    for item in listItem:
-        return item[searchItem]
-    return "null"    
+    #print('listItem', listItem[searchItem])
+    # for item in listItem:
+    #     print('return from here')
+    #     return item[searchItem]
+    #return "null~"    
+    if listItem[searchItem] :
+        return listItem[searchItem]
 
 def getNextVal(tableName, colName, prefixChar):
     sqlNextVal = f""" (select mid({colName},length('{prefixChar}')+1)+1 from {tableName} order by CreatedON desc limit 1)
                 union ( select 1 ) limit 1 ;"""
-    #print(sqlNextVal)
+    print(sqlNextVal)
     sqlEngine= get_connection(config)
     dbConnection= sqlEngine.connect()
     result = dbConnection.execute(text(sqlNextVal)).fetchone()
@@ -76,15 +80,19 @@ def getNextVal(tableName, colName, prefixChar):
     
 def featureTable(executionData):
     # Feature Table
+    print('inside featurtable')
+    print('desc', getAttribute(executionData, "description"))
     clientId,sponsorId, applicationId,featureId,featureName = getAttribute(executionData, "description").split('~')
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}'"
+    print(sqlSelectFeature)
     result = executeSelect(sqlSelectFeature)
     if len(result.index) > 0:
         print('feature exists')
     else:
-        featureId = 'F' + str(getNextVal('feature', 'featureid', 'F'))
+        if featureId == "??":
+            featureId = 'F' + str(getNextVal('feature', 'featureid', 'F'))
         sqlInsertFeature = f"""Insert into {config['database']}.feature 
         (applicationId, featureid, FeatureName, description, uri, CreatedBy)
         values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin')"""
@@ -95,7 +103,8 @@ def featureTable(executionData):
 
 def featureExecutionTable(executionData,featureId):
     df = pd.json_normalize(executionData,record_path='elements')
-    startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
+    #startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
+    startTime = "2023-05-17 10:28"
     featureExecutionId = 'FE' + str(getNextVal('featureExecution', 'featureExecutionId', 'FE'))
     #featureId = 'F5'
     tcDuration=1
@@ -110,40 +119,45 @@ def featureExecutionTable(executionData,featureId):
         
 
 if __name__ == '__main__':
-    try:
+    
         #executeInsert()
         
-        sqlQuery= "select clientID, ClientName from client where clientId='C3'"
-        print(executeSelect(sqlQuery))
-        #df = pd.read_json('results.json')
-        
-        
+    sqlQuery= "select clientID, ClientName from client where clientId='C3'"
+    #print(executeSelect(sqlQuery))
+    #df = pd.read_json('results.json')
+    
+    
 # read the file
-        executionData = json.load(open('results.json'))
-        featureId = featureTable(executionData)
-        featureExecutionId = featureExecutionTable(executionData,featureId)
-        #print('featureId=', featureId)
-        
+    executionData = json.load(open('results.json'))
+    #print('featureId=', featureId)
+    for featureFile in executionData:
+        print('h')
+        featureId = featureTable(featureFile)
+        print('ii')
+        featureExecutionId = featureExecutionTable(featureFile,featureId)
+
+        #print('executionData', element)
+    
 
 
 # load into pandas
-        #df = pd.json_normalize(data,"elements")
+    #df = pd.json_normalize(data,"elements")
+    
+    #print('desc', )
+        df = pd.json_normalize(featureFile,record_path='elements')
+    # df = (
+    #         df["steps"]
+    #         .apply(pd.Series)
+    #         .merge(df, left_index=True, right_index = True)
+    #     )
+    #print('duration=', df[df['steps']])
+    # print('duration=', [pd.DataFrame(i)['result']['duration'].sum() 
+    #                          for i in df['steps'].tolist()] )
+    
+    #m = df['steps'].explode()
+    #df1= pd.DataFrame(m.tolist(),index=m.index)['result']
+    #df2= pd.DataFrame(df1['duration'].tolist(),index=df1['duration'].index)
         
-        #print('desc', )
-        df = pd.json_normalize(executionData,record_path='elements')
-        # df = (
-        #         df["steps"]
-        #         .apply(pd.Series)
-        #         .merge(df, left_index=True, right_index = True)
-        #     )
-        #print('duration=', df[df['steps']])
-        # print('duration=', [pd.DataFrame(i)['result']['duration'].sum() 
-        #                          for i in df['steps'].tolist()] )
-        
-        #m = df['steps'].explode()
-        #df1= pd.DataFrame(m.tolist(),index=m.index)['result']
-        #df2= pd.DataFrame(df1['duration'].tolist(),index=df1['duration'].index)
-        #print(df2)
         for step in df['steps'].tolist():
             tcDuration = 0
             tcSteps = 0
@@ -154,5 +168,3 @@ if __name__ == '__main__':
             print('tc steps', tcSteps)
         #print(df['steps'][0][0]['result']['duration'])
         #print(df['steps'][0][0]['line'])
-    except Exception as ex:
-        print("Connection could not be made due to the following error: \n", ex)
