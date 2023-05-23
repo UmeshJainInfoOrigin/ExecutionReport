@@ -146,24 +146,67 @@ def scenarioTable(executionData,featureExecutionId):
         dfScenarioSectionDF = df['steps'][index]
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
 
-def scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId):
-    for stepDetail in dfScenarioSectionDF:
+def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
+    scenarioStatusFlag = True
+    for stepDetail in dfScenarioSection:
         ScenarioStepExecutionId = 'SSE' + str(getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE'))
         keyword = stepDetail['keyword'].strip()
         name = stepDetail['name']
         duration = round(stepDetail['result']['duration']/pow(10, 9),2)
         status = stepDetail['result']['status']
+        if status.upper() != 'passed'.upper() and scenarioStatusFlag:
+            scenarioStatusFlag = False
         sqlInsertScenarioStep = f"""Insert into {config['database']}.scenariostep 
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, CreatedBy)
             values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}','{name}',{duration}, '{status}', 'infoOrigin')"""
         #print (sqlInsertScenarioStep)
         executeSqlInsert(sqlInsertScenarioStep)
+    
+    scenarioStatus ='passed' if scenarioStatusFlag else 'failed'
+    sqlUpdateScenario = f"""update {config['database']}.scenario set status='{scenarioStatus}'
+    where scenarioId='{scenarioId}' and ScenarioExecutionId='{scenarioExecutionId}';"""
+    executeSqlInsert(sqlUpdateScenario)
 
 
 if __name__ == '__main__':
+    executionStartTime = datetime.now()
+
     executionData = json.load(open(cucumberTestRunFile))
     for featureFile in executionData:
         df = pd.json_normalize(featureFile,record_path='elements')
         featureId = featureTable(featureFile)
         featureExecutionId = featureExecutionTable(featureFile,featureId)
         scenarioTable(featureFile,featureExecutionId)
+    
+    sqlUpdateScenario = f"""UPDATE {config['database']}.scenario s
+                    INNER JOIN (
+                    SELECT ScenarioExecutionId, SUM(duration) as total
+                    FROM test.scenarioStep
+                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
+                    GROUP BY ScenarioExecutionId
+                    ) x ON s.ScenarioExecutionId = x.ScenarioExecutionId 
+                    SET s.duration = x.total;"""
+    executeSqlInsert(sqlUpdateScenario)
+    #Update Failed number
+    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
+                    INNER JOIN (
+                    SELECT FeatureExecutionId, count(*) as total
+                    FROM test.scenario
+                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='failed'
+                    GROUP BY FeatureExecutionId
+                    ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
+                    SET FE.failed = x.total;"""
+    executeSqlInsert(sqlUpdateFeatureExecution)
+    #Update Passed number
+    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
+                    INNER JOIN (
+                    SELECT FeatureExecutionId, count(*) as total
+                    FROM test.scenario
+                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='passed'
+                    GROUP BY FeatureExecutionId
+                    ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
+                    SET FE.passed = x.total;"""
+    executeSqlInsert(sqlUpdateFeatureExecution)
+
+    executionEndTime = datetime.now()
+    print('Total Execution Time=', executionEndTime - executionStartTime)
