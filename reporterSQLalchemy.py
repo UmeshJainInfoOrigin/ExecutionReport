@@ -4,11 +4,12 @@ import pymysql
 import json
 import os
 from datetime import datetime
+import shutil
 
 meta = MetaData()
 
 #cucumberTestRunFile = 'results.json'
-cucumberTestRunFile = 'CucumberRunnerTest.json'
+#cucumberTestRunFile = 'CucumberRunnerTest.json'
 
 feature = Table(
    'feature', meta, 
@@ -39,14 +40,14 @@ def get_connection(config):
         ),echo = False
     )
 
-def executeSelect(sqlQuery):
-    sqlEngine= get_connection(config)
-    dbConnection= sqlEngine.connect()
-    result= pd.read_sql(sqlQuery, dbConnection)
-    pd.set_option('display.expand_frame_repr', False)
-    dbConnection.close()
-    #print('Total Rows', len(result.index))
-    return result
+# def executeSelect(sqlQuery):
+#     sqlEngine= get_connection(config)
+#     dbConnection= sqlEngine.connect()
+#     result= pd.read_sql(sqlQuery, dbConnection)
+#     pd.set_option('display.expand_frame_repr', False)
+#     dbConnection.close()
+#     #print('Total Rows', len(result.index))
+#     return result
 
 def executeInsert():
     sqlEngine= get_connection(config)
@@ -60,9 +61,11 @@ def executeInsert():
 def executeSqlInsert(sqlInsert):
     sqlEngine= get_connection(config)
     dbConnection= sqlEngine.connect()
-    dbConnection.execute(text(sqlInsert))
+    result=dbConnection.execute(text(sqlInsert))
+    #print('result.index=', result.rowcount)
     dbConnection.commit()
     dbConnection.close()
+    return result
 
 
 def getAttribute(listItem, searchItem):
@@ -92,8 +95,9 @@ def featureTable(executionData):
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
     #print(sqlSelectFeature)
-    result = executeSelect(sqlSelectFeature)
-    if len(result.index) > 0:
+    #result = executeSelect(sqlSelectFeature)
+    result = executeSqlInsert(sqlSelectFeature)
+    if result.rowcount > 0:
         print('feature exists')
     else:
         if featureId == "??":
@@ -151,14 +155,18 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     for stepDetail in dfScenarioSection:
         ScenarioStepExecutionId = 'SSE' + str(getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE'))
         keyword = stepDetail['keyword'].strip()
-        name = stepDetail['name']
+        name = stepDetail['name'].replace('"', "'")
         duration = round(stepDetail['result']['duration']/pow(10, 9),2)
         status = stepDetail['result']['status']
+        if "error_message" in stepDetail['result'] :
+            errorMessage = stepDetail['result']['error_message']
+        else:
+            errorMessage = ""
         if status.upper() != 'passed'.upper() and scenarioStatusFlag:
             scenarioStatusFlag = False
         sqlInsertScenarioStep = f"""Insert into {config['database']}.scenariostep 
-                (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, CreatedBy)
-            values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}','{name}',{duration}, '{status}', 'infoOrigin')"""
+                (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
+            values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}',"{name}",{duration}, '{status}', "{errorMessage}" ,'infoOrigin')"""
         #print (sqlInsertScenarioStep)
         executeSqlInsert(sqlInsertScenarioStep)
     
@@ -167,46 +175,88 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     where scenarioId='{scenarioId}' and ScenarioExecutionId='{scenarioExecutionId}';"""
     executeSqlInsert(sqlUpdateScenario)
 
+def databaseCummulative(executionStartTime):
+    sqlUpdateScenario = f"""UPDATE {config['database']}.scenario s
+                INNER JOIN (
+                SELECT ScenarioExecutionId, SUM(duration) as total
+                FROM test.scenarioStep
+                where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
+                GROUP BY ScenarioExecutionId
+                ) x ON s.ScenarioExecutionId = x.ScenarioExecutionId 
+                SET s.duration = x.total;"""
+    executeSqlInsert(sqlUpdateScenario)
+#Update Failed number
+    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
+                INNER JOIN (
+                SELECT FeatureExecutionId, count(*) as total
+                FROM test.scenario
+                where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='failed'
+                GROUP BY FeatureExecutionId
+                ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
+                SET FE.failed = x.total;"""
+    executeSqlInsert(sqlUpdateFeatureExecution)
+#Update Passed number
+    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
+                INNER JOIN (
+                SELECT FeatureExecutionId, count(*) as total
+                FROM test.scenario
+                where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='passed'
+                GROUP BY FeatureExecutionId
+                ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
+                SET FE.passed = x.total;"""
+    executeSqlInsert(sqlUpdateFeatureExecution)
 
-if __name__ == '__main__':
-    executionStartTime = datetime.now()
+#Update duration
+    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
+                INNER JOIN (
+                SELECT FeatureExecutionId, sum(duration) as total
+                FROM test.scenario
+                where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
+                GROUP BY FeatureExecutionId
+                ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
+                SET FE.duration = x.total;"""
+    executeSqlInsert(sqlUpdateFeatureExecution)
 
+
+def processJSON(cucumberTestRunFile, executionStartTime):
     executionData = json.load(open(cucumberTestRunFile))
-    for featureFile in executionData:
+    for indexExecutionData, featureFile in enumerate(executionData):
         df = pd.json_normalize(featureFile,record_path='elements')
         featureId = featureTable(featureFile)
         featureExecutionId = featureExecutionTable(featureFile,featureId)
         scenarioTable(featureFile,featureExecutionId)
-    
-    sqlUpdateScenario = f"""UPDATE {config['database']}.scenario s
-                    INNER JOIN (
-                    SELECT ScenarioExecutionId, SUM(duration) as total
-                    FROM test.scenarioStep
-                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
-                    GROUP BY ScenarioExecutionId
-                    ) x ON s.ScenarioExecutionId = x.ScenarioExecutionId 
-                    SET s.duration = x.total;"""
-    executeSqlInsert(sqlUpdateScenario)
-    #Update Failed number
-    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
-                    INNER JOIN (
-                    SELECT FeatureExecutionId, count(*) as total
-                    FROM test.scenario
-                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='failed'
-                    GROUP BY FeatureExecutionId
-                    ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
-                    SET FE.failed = x.total;"""
-    executeSqlInsert(sqlUpdateFeatureExecution)
-    #Update Passed number
-    sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
-                    INNER JOIN (
-                    SELECT FeatureExecutionId, count(*) as total
-                    FROM test.scenario
-                    where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='passed'
-                    GROUP BY FeatureExecutionId
-                    ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
-                    SET FE.passed = x.total;"""
-    executeSqlInsert(sqlUpdateFeatureExecution)
+        databaseCummulative(executionStartTime)
+
+if __name__ == '__main__':
+    executionStartTime = datetime.now()
+    inboundPath = os.getcwd() + "\\inboundJSONReports"
+    processedPath = os.getcwd() + "\\processedJSONReports"
+    dir_list = os.listdir(inboundPath)
+    for cucumberTestRunFile in dir_list:
+        
+        os.chdir(inboundPath)
+        print(os.getcwd())
+        executionData = json.load(open(cucumberTestRunFile))
+        for indexExecutionData, featureFile in enumerate(executionData):
+            df = pd.json_normalize(featureFile,record_path='elements')
+            preValidation= "Passed"
+            preValidationMsg = ""
+            if featureFile['description'].count('~') <4 :
+                preValidation="Failed"
+                preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
+            for index, data in enumerate(df['tags']):
+                if len(data) ==0 :
+                    preValidation = "Failed"
+                    preValidationMsg = f"""{preValidationMsg} Scenario/Testcase first Tag having unique TCid is missing in\n -{executionData[indexExecutionData]['elements'][index]['name']}"""
+
+        if preValidation =="Failed" :
+            print(preValidationMsg)
+        else:
+            processJSON(cucumberTestRunFile,executionStartTime)
+            shutil.move( inboundPath + "/" + cucumberTestRunFile, processedPath +'/' + cucumberTestRunFile,)
 
     executionEndTime = datetime.now()
     print('Total Execution Time=', executionEndTime - executionStartTime)
+
+
+
