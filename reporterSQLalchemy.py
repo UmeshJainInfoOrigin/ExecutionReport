@@ -159,7 +159,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
         duration = round(stepDetail['result']['duration']/pow(10, 9),2)
         status = stepDetail['result']['status']
         if "error_message" in stepDetail['result'] :
-            errorMessage = stepDetail['result']['error_message']
+            errorMessage = stepDetail['result']['error_message'].replace('"',"'")
         else:
             errorMessage = ""
         if status.upper() != 'passed'.upper() and scenarioStatusFlag:
@@ -233,14 +233,12 @@ if __name__ == '__main__':
     processedPath = os.getcwd() + "\\processedJSONReports"
     dir_list = os.listdir(inboundPath)
     for cucumberTestRunFile in dir_list:
-        
         os.chdir(inboundPath)
-        print(os.getcwd())
         executionData = json.load(open(cucumberTestRunFile))
+        preValidation= "Passed"
+        preValidationMsg = cucumberTestRunFile + " is not processed as\n"
         for indexExecutionData, featureFile in enumerate(executionData):
             df = pd.json_normalize(featureFile,record_path='elements')
-            preValidation= "Passed"
-            preValidationMsg = ""
             if featureFile['description'].count('~') <4 :
                 preValidation="Failed"
                 preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
