@@ -1,25 +1,10 @@
 import pandas as pd
-from sqlalchemy import create_engine,MetaData, Table, Column, Integer, String, text
+from sqlalchemy import create_engine, text
 import pymysql
 import json
-import os
+import os, getopt, sys
 from datetime import datetime
 import shutil
-
-meta = MetaData()
-
-#cucumberTestRunFile = 'results.json'
-#cucumberTestRunFile = 'CucumberRunnerTest.json'
-
-feature = Table(
-   'feature', meta, 
-   Column('ApplicationId', String), 
-   Column('FeatureId', String,primary_key = True), 
-   Column('FeatureName', String), 
-   Column('Description', String),
-   Column('Uri', String), 
-   Column('CreatedBy', String)
-)
 
 config = {
   'user': 'root',
@@ -40,33 +25,13 @@ def get_connection(config):
         ),echo = False
     )
 
-# def executeSelect(sqlQuery):
-#     sqlEngine= get_connection(config)
-#     dbConnection= sqlEngine.connect()
-#     result= pd.read_sql(sqlQuery, dbConnection)
-#     pd.set_option('display.expand_frame_repr', False)
-#     dbConnection.close()
-#     #print('Total Rows', len(result.index))
-#     return result
-
-def executeInsert():
-    sqlEngine= get_connection(config)
-    dbConnection= sqlEngine.connect()
-    dbConnection.execute(feature.insert(),[
-        {'ApplicationId':'A2', 'FeatureId':'F2', 'FeatureName':'Feature Name', 'Description':'Sample Desc', 'Uri':'complete path', 'CreatedBy': 'infoorigin'}
-    ])
-    dbConnection.commit()
-    dbConnection.close()
-
 def executeSqlInsert(sqlInsert):
     sqlEngine= get_connection(config)
     dbConnection= sqlEngine.connect()
     result=dbConnection.execute(text(sqlInsert))
-    #print('result.index=', result.rowcount)
     dbConnection.commit()
     dbConnection.close()
     return result
-
 
 def getAttribute(listItem, searchItem):
     #print('listItem', listItem[searchItem])
@@ -85,8 +50,6 @@ def getNextVal(tableName, colName, prefixChar):
     dbConnection= sqlEngine.connect()
     result = dbConnection.execute(text(sqlNextVal)).fetchone()
     dbConnection.close()
-    #print('getNextVal', int(result[0]))
-    #first row, first column
     return int(result[0])
     
 def featureTable(executionData):
@@ -94,40 +57,29 @@ def featureTable(executionData):
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
-    #print(sqlSelectFeature)
-    #result = executeSelect(sqlSelectFeature)
     result = executeSqlInsert(sqlSelectFeature)
-    if result.rowcount > 0:
-        print('feature exists')
-    else:
+    if result.rowcount <= 0:
         if featureId == "??":
             featureId = 'F' + str(getNextVal('feature', 'featureid', 'F'))
         sqlInsertFeature = f"""Insert into {config['database']}.feature 
         (applicationId, featureid, FeatureName, description, uri, CreatedBy)
         values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin');"""
-        #print("feature not exists")
-        #print (sqlInsertFeature)
         executeSqlInsert(sqlInsertFeature)
     return featureId
 
 def featureExecutionTable(executionData,featureId):
     df = pd.json_normalize(executionData,record_path='elements')
-    #startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
-    #startTime = "2023-05-17 10:28"
     if 'start_timestamp' in df:
         startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
     else:
         startTime = getFileModifiedTimeStamp(os.getcwd() + '/' + cucumberTestRunFile)
 
     featureExecutionId = 'FE' + str(getNextVal('featureExecution', 'featureExecutionId', 'FE'))
-    #featureId = 'F5'
     tcDuration=1
     totalScenario = df['steps'].count()
     sqlInsertFeatureExecution = f"""Insert into {config['database']}.featureexecution 
     (FeatureExecutionId, featureid, Duration, TotalScenario, StartTime, CreatedBy)
     values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin');"""
-    #print("feature not exists")
-    #print (sqlInsertFeature)
     executeSqlInsert(sqlInsertFeatureExecution)
     return featureExecutionId
 
@@ -135,12 +87,9 @@ def scenarioTable(executionData,featureExecutionId):
     df = pd.json_normalize(executionData,record_path='elements')
     for index, scenarioName in enumerate(df['name'].tolist()):
         scenarioExecutionId = 'SE' + str(getNextVal('scenario', 'scenarioExecutionId', 'SE'))
-        #featureId='F5'
-        #featureExecutionId='FE1'
         scenarioId = df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags'
         description= df['description'][index]
         duration=1
-        #print ('scenarioName', index, scenarioName, df['description'][index], df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags')       
         sqlInsertScenario = f"""Insert into {config['database']}.scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy)
         values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin');"""
@@ -167,7 +116,6 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
         sqlInsertScenarioStep = f"""Insert into {config['database']}.scenariostep 
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
             values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}',"{name}",{duration}, '{status}', "{errorMessage}" ,'infoOrigin')"""
-        #print (sqlInsertScenarioStep)
         executeSqlInsert(sqlInsertScenarioStep)
     
     scenarioStatus ='passed' if scenarioStatusFlag else 'failed'
@@ -217,20 +165,36 @@ def databaseCummulative(executionStartTime):
                 SET FE.duration = x.total;"""
     executeSqlInsert(sqlUpdateFeatureExecution)
 
-
 def processJSON(cucumberTestRunFile, executionStartTime):
     executionData = json.load(open(cucumberTestRunFile))
     for indexExecutionData, featureFile in enumerate(executionData):
-        df = pd.json_normalize(featureFile,record_path='elements')
         featureId = featureTable(featureFile)
         featureExecutionId = featureExecutionTable(featureFile,featureId)
         scenarioTable(featureFile,featureExecutionId)
         databaseCummulative(executionStartTime)
 
-if __name__ == '__main__':
-    executionStartTime = datetime.now()
+def main(argv):
     inboundPath = os.getcwd() + "\\inboundJSONReports"
     processedPath = os.getcwd() + "\\processedJSONReports"
+    
+    try:
+        opts, args = getopt.getopt(argv,"hi:o:",["ifile=","pfile="])
+    except getopt.GetoptError:
+        print ('<programname> -i <inboundJSONReportsPath> -p <processedJSONReportsPath>')
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt == '-h':
+            print ('<filename> -i <inputfile> -o <outputfile>')
+            sys.exit()
+        elif opt in ("-i", "--ifile", "--i"):
+            inboundPath = arg
+        elif opt in ("-p", "--pfile", "--p"):
+            processedPath = arg
+    return inboundPath, processedPath
+
+if __name__ == '__main__':
+    executionStartTime = datetime.now()
+    inboundPath, processedPath = main(sys.argv[1:])
     dir_list = os.listdir(inboundPath)
     for cucumberTestRunFile in dir_list:
         os.chdir(inboundPath)
@@ -251,6 +215,7 @@ if __name__ == '__main__':
             print(preValidationMsg)
         else:
             processJSON(cucumberTestRunFile,executionStartTime)
+            print("Successfully processed file...", cucumberTestRunFile)
             shutil.move( inboundPath + "/" + cucumberTestRunFile, processedPath +'/' + cucumberTestRunFile,)
 
     executionEndTime = datetime.now()
