@@ -14,6 +14,12 @@ config = {
   'port' : 3306,
   'raise_on_warnings': True
 }
+tableImpactedRowCount = {
+    'feature': 0,
+    'featureExecution': 0,
+    'scenario' : 0,
+    'scenarioStep' :0
+}
 
 def getFileModifiedTimeStamp(filePath):
     return datetime.fromtimestamp(os.path.getmtime(filePath)).strftime("%Y-%m-%d %H:%M:%S")
@@ -65,6 +71,7 @@ def featureTable(executionData):
         (applicationId, featureid, FeatureName, description, uri, CreatedBy)
         values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin');"""
         executeSqlInsert(sqlInsertFeature)
+        tableImpactedRowCount['feature'] = tableImpactedRowCount['feature'] + 1
     return featureId
 
 def featureExecutionTable(executionData,featureId):
@@ -81,6 +88,7 @@ def featureExecutionTable(executionData,featureId):
     (FeatureExecutionId, featureid, Duration, TotalScenario, StartTime, CreatedBy)
     values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin');"""
     executeSqlInsert(sqlInsertFeatureExecution)
+    tableImpactedRowCount['featureExecution'] = tableImpactedRowCount['featureExecution'] + 1    
     return featureExecutionId
 
 def scenarioTable(executionData,featureExecutionId):
@@ -93,11 +101,10 @@ def scenarioTable(executionData,featureExecutionId):
         sqlInsertScenario = f"""Insert into {config['database']}.scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy)
         values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin');"""
-        #print("feature not exists")
-        #print (sqlInsertScenario)
         executeSqlInsert(sqlInsertScenario)
         dfScenarioSectionDF = df['steps'][index]
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
+        tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1    
 
 def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     scenarioStatusFlag = True
@@ -117,6 +124,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
             values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}',"{name}",{duration}, '{status}', "{errorMessage}" ,'infoOrigin')"""
         executeSqlInsert(sqlInsertScenarioStep)
+        tableImpactedRowCount['scenarioStep'] = tableImpactedRowCount['scenarioStep'] + 1    
     
     scenarioStatus ='passed' if scenarioStatusFlag else 'failed'
     sqlUpdateScenario = f"""update {config['database']}.scenario set status='{scenarioStatus}'
@@ -173,6 +181,12 @@ def processJSON(cucumberTestRunFile, executionStartTime):
         scenarioTable(featureFile,featureExecutionId)
         databaseCummulative(executionStartTime)
 
+def printRowsAdded():
+    for k, v in tableImpactedRowCount.items():
+        print(f"""{v} row(s) added to {k} Table""")
+    for key in tableImpactedRowCount.keys():
+        tableImpactedRowCount[key] = 0
+
 def main(argv):
     inboundPath = os.getcwd() + "\\inboundJSONReports"
     processedPath = os.getcwd() + "\\processedJSONReports"
@@ -190,6 +204,11 @@ def main(argv):
             inboundPath = arg
         elif opt in ("-p", "--pfile", "--p"):
             processedPath = arg
+            # check if directory exists or not yet
+            if not os.path.exists(arg):
+                os.makedirs(arg)
+                print(arg, ' Directory Created....')
+
     return inboundPath, processedPath
 
 if __name__ == '__main__':
@@ -216,6 +235,7 @@ if __name__ == '__main__':
         else:
             processJSON(cucumberTestRunFile,executionStartTime)
             print("Successfully processed file...", cucumberTestRunFile)
+            printRowsAdded()
             shutil.move( inboundPath + "/" + cucumberTestRunFile, processedPath +'/' + cucumberTestRunFile,)
 
     executionEndTime = datetime.now()
