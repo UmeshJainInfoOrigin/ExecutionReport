@@ -5,6 +5,9 @@ import json
 import os, getopt, sys
 from datetime import datetime
 import shutil
+#_______________________________________________________________________________________
+
+mySQLinCloud = True
 
 config = {
   'user': 'root',
@@ -12,32 +15,57 @@ config = {
   'host': '127.0.0.1',
   'database': 'test',
   'port' : 3306,
-  'raise_on_warnings': True
+  'raise_on_warnings': True,
+  'ssl_ca': 'DigiCertGlobalRootCA.crt.pem',
+  'ssl_disabled' : False
+
 }
+
+configCloud = {
+  'user': 'testdbuser',
+  'password': 'Scott123',
+  'host': 'io-da-test-mysql-db.mysql.database.azure.com',
+  'database': 'test',
+  'port' : 3306,
+  'raise_on_warnings': True,
+  'ssl_ca': os.getcwd() + '/DigiCertGlobalRootCA.crt.pem',
+  'ssl_disabled' : False
+}
+
 tableImpactedRowCount = {
     'feature': 0,
     'featureExecution': 0,
     'scenario' : 0,
     'scenarioStep' :0
 }
+#_______________________________________________________________________________________
 
 def getFileModifiedTimeStamp(filePath):
     return datetime.fromtimestamp(os.path.getmtime(filePath)).strftime("%Y-%m-%d %H:%M:%S")
+#_______________________________________________________________________________________
 
 def get_connection(config):
+    if mySQLinCloud :
+        return create_engine(
+        url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}?ssl_ca={5}".format(
+            config['user'], config['password'], config['host'], config['port'], config['database'], config['ssl_ca']
+        ),echo = False)
+
     return create_engine(
         url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}".format(
             config['user'], config['password'], config['host'], config['port'], config['database']
-        ),echo = False
-    )
+        ),echo = False)
+#_______________________________________________________________________________________
 
 def executeSqlInsert(sqlInsert):
+    #print("config", config)
     sqlEngine= get_connection(config)
     dbConnection= sqlEngine.connect()
     result=dbConnection.execute(text(sqlInsert))
     dbConnection.commit()
     dbConnection.close()
     return result
+#_______________________________________________________________________________________
 
 def getAttribute(listItem, searchItem):
     #print('listItem', listItem[searchItem])
@@ -47,6 +75,7 @@ def getAttribute(listItem, searchItem):
     #return "null~"    
     if listItem[searchItem] :
         return listItem[searchItem]
+#_______________________________________________________________________________________
 
 def getNextVal(tableName, colName, prefixChar):
     sqlNextVal = f""" (select mid({colName},length('{prefixChar}')+1)+1 from {tableName} order by CreatedON desc limit 1)
@@ -57,7 +86,8 @@ def getNextVal(tableName, colName, prefixChar):
     result = dbConnection.execute(text(sqlNextVal)).fetchone()
     dbConnection.close()
     return int(result[0])
-    
+#_______________________________________________________________________________________    
+
 def featureTable(executionData):
     clientId,sponsorId, applicationId,featureId,featureName = getAttribute(executionData, "description").split('~')
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
@@ -73,6 +103,7 @@ def featureTable(executionData):
         executeSqlInsert(sqlInsertFeature)
         tableImpactedRowCount['feature'] = tableImpactedRowCount['feature'] + 1
     return featureId
+#_______________________________________________________________________________________
 
 def featureExecutionTable(executionData,featureId):
     df = pd.json_normalize(executionData,record_path='elements')
@@ -90,6 +121,7 @@ def featureExecutionTable(executionData,featureId):
     executeSqlInsert(sqlInsertFeatureExecution)
     tableImpactedRowCount['featureExecution'] = tableImpactedRowCount['featureExecution'] + 1    
     return featureExecutionId
+#_______________________________________________________________________________________
 
 def scenarioTable(executionData,featureExecutionId):
     df = pd.json_normalize(executionData,record_path='elements')
@@ -105,6 +137,7 @@ def scenarioTable(executionData,featureExecutionId):
         dfScenarioSectionDF = df['steps'][index]
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
         tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1    
+#_______________________________________________________________________________________
 
 def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     scenarioStatusFlag = True
@@ -112,7 +145,10 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
         ScenarioStepExecutionId = 'SSE' + str(getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE'))
         keyword = stepDetail['keyword'].strip()
         name = stepDetail['name'].replace('"', "'")
-        duration = round(stepDetail['result']['duration']/pow(10, 9),2)
+        if 'duration' in stepDetail['result']:
+            duration = round(stepDetail['result']['duration']/pow(10, 9),2)
+        else:
+            duration = 0
         status = stepDetail['result']['status']
         if "error_message" in stepDetail['result'] :
             errorMessage = stepDetail['result']['error_message'].replace('"',"'")
@@ -130,6 +166,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     sqlUpdateScenario = f"""update {config['database']}.scenario set status='{scenarioStatus}'
     where scenarioId='{scenarioId}' and ScenarioExecutionId='{scenarioExecutionId}';"""
     executeSqlInsert(sqlUpdateScenario)
+#_______________________________________________________________________________________
 
 def databaseCummulative(executionStartTime):
     sqlUpdateScenario = f"""UPDATE {config['database']}.scenario s
@@ -172,7 +209,7 @@ def databaseCummulative(executionStartTime):
                 ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
                 SET FE.duration = x.total;"""
     executeSqlInsert(sqlUpdateFeatureExecution)
-
+#_______________________________________________________________________________________
 def processJSON(cucumberTestRunFile, executionStartTime):
     executionData = json.load(open(cucumberTestRunFile))
     for indexExecutionData, featureFile in enumerate(executionData):
@@ -180,13 +217,13 @@ def processJSON(cucumberTestRunFile, executionStartTime):
         featureExecutionId = featureExecutionTable(featureFile,featureId)
         scenarioTable(featureFile,featureExecutionId)
         databaseCummulative(executionStartTime)
-
+#_______________________________________________________________________________________
 def printRowsAdded():
     for k, v in tableImpactedRowCount.items():
         print(f"""{v} row(s) added to {k} Table""")
     for key in tableImpactedRowCount.keys():
         tableImpactedRowCount[key] = 0
-
+#_______________________________________________________________________________________
 def main(argv):
     inboundPath = os.getcwd() + "\\inboundJSONReports"
     processedPath = os.getcwd() + "\\processedJSONReports"
@@ -210,8 +247,12 @@ def main(argv):
                 print(arg, ' Directory Created....')
 
     return inboundPath, processedPath
-
+#_______________________________________________________________________________________
 if __name__ == '__main__':
+    if mySQLinCloud :
+        for key in config.keys():
+            config[key] = configCloud[key]
+
     executionStartTime = datetime.now()
     inboundPath, processedPath = main(sys.argv[1:])
     dir_list = os.listdir(inboundPath)
