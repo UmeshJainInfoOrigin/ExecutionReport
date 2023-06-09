@@ -7,7 +7,7 @@ from datetime import datetime
 import shutil
 #_______________________________________________________________________________________
 
-mySQLinCloud = True
+mySQLinCloud = False
 
 config = {
   'user': 'root',
@@ -44,7 +44,7 @@ def getFileModifiedTimeStamp(filePath):
     return datetime.fromtimestamp(os.path.getmtime(filePath)).strftime("%Y-%m-%d %H:%M:%S")
 #_______________________________________________________________________________________
 
-def get_connection(config):
+def getConnection(config):
     if mySQLinCloud :
         return create_engine(
         url="mysql+pymysql://{0}:{1}@{2}:{3}/{4}?ssl_ca={5}".format(
@@ -57,9 +57,8 @@ def get_connection(config):
         ),echo = False)
 #_______________________________________________________________________________________
 
-def executeSqlInsert(sqlInsert):
-    #print("config", config)
-    sqlEngine= get_connection(config)
+def executeSQL(sqlInsert):
+    sqlEngine= getConnection(config)
     dbConnection= sqlEngine.connect()
     result=dbConnection.execute(text(sqlInsert))
     dbConnection.commit()
@@ -81,7 +80,7 @@ def getNextVal(tableName, colName, prefixChar):
     sqlNextVal = f""" (select mid({colName},length('{prefixChar}')+1)+1 from {tableName} order by CreatedON desc limit 1)
                 union ( select 1 ) limit 1 ;"""
     #print(sqlNextVal)
-    sqlEngine= get_connection(config)
+    sqlEngine= getConnection(config)
     dbConnection= sqlEngine.connect()
     result = dbConnection.execute(text(sqlNextVal)).fetchone()
     dbConnection.close()
@@ -93,14 +92,14 @@ def featureTable(executionData):
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
-    result = executeSqlInsert(sqlSelectFeature)
+    result = executeSQL(sqlSelectFeature)
     if result.rowcount <= 0:
         if featureId == "??":
             featureId = 'F' + str(getNextVal('feature', 'featureid', 'F'))
         sqlInsertFeature = f"""Insert into {config['database']}.feature 
         (applicationId, featureid, FeatureName, description, uri, CreatedBy)
         values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin');"""
-        executeSqlInsert(sqlInsertFeature)
+        executeSQL(sqlInsertFeature)
         tableImpactedRowCount['feature'] = tableImpactedRowCount['feature'] + 1
     return featureId
 #_______________________________________________________________________________________
@@ -116,9 +115,9 @@ def featureExecutionTable(executionData,featureId):
     tcDuration=1
     totalScenario = df['steps'].count()
     sqlInsertFeatureExecution = f"""Insert into {config['database']}.featureexecution 
-    (FeatureExecutionId, featureid, Duration, TotalScenario, StartTime, CreatedBy)
+    (FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy)
     values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin');"""
-    executeSqlInsert(sqlInsertFeatureExecution)
+    executeSQL(sqlInsertFeatureExecution)
     tableImpactedRowCount['featureExecution'] = tableImpactedRowCount['featureExecution'] + 1    
     return featureExecutionId
 #_______________________________________________________________________________________
@@ -133,7 +132,7 @@ def scenarioTable(executionData,featureExecutionId):
         sqlInsertScenario = f"""Insert into {config['database']}.scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy)
         values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin');"""
-        executeSqlInsert(sqlInsertScenario)
+        executeSQL(sqlInsertScenario)
         dfScenarioSectionDF = df['steps'][index]
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
         tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1    
@@ -159,13 +158,13 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
         sqlInsertScenarioStep = f"""Insert into {config['database']}.scenariostep 
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
             values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}',"{name}",{duration}, '{status}', "{errorMessage}" ,'infoOrigin')"""
-        executeSqlInsert(sqlInsertScenarioStep)
+        executeSQL(sqlInsertScenarioStep)
         tableImpactedRowCount['scenarioStep'] = tableImpactedRowCount['scenarioStep'] + 1    
     
     scenarioStatus ='passed' if scenarioStatusFlag else 'failed'
     sqlUpdateScenario = f"""update {config['database']}.scenario set status='{scenarioStatus}'
     where scenarioId='{scenarioId}' and ScenarioExecutionId='{scenarioExecutionId}';"""
-    executeSqlInsert(sqlUpdateScenario)
+    executeSQL(sqlUpdateScenario)
 #_______________________________________________________________________________________
 
 def databaseCummulative(executionStartTime):
@@ -177,27 +176,27 @@ def databaseCummulative(executionStartTime):
                 GROUP BY ScenarioExecutionId
                 ) x ON s.ScenarioExecutionId = x.ScenarioExecutionId 
                 SET s.duration = x.total;"""
-    executeSqlInsert(sqlUpdateScenario)
+    executeSQL(sqlUpdateScenario)
 #Update Failed number
     sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
                 INNER JOIN (
-                SELECT FeatureExecutionId, count(*) as total
+                SELECT FeatureExecutionId, count(*) as total,sum(duration) as failedDuration
                 FROM test.scenario
                 where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='failed'
                 GROUP BY FeatureExecutionId
                 ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
-                SET FE.failed = x.total;"""
-    executeSqlInsert(sqlUpdateFeatureExecution)
+                SET FE.failed = x.total, FE.FailedDuration=x.failedDuration;"""
+    executeSQL(sqlUpdateFeatureExecution)
 #Update Passed number
     sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
                 INNER JOIN (
-                SELECT FeatureExecutionId, count(*) as total
+                SELECT FeatureExecutionId, count(*) as total,sum(duration) as passedDuration
                 FROM test.scenario
                 where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}' and status='passed'
                 GROUP BY FeatureExecutionId
                 ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
-                SET FE.passed = x.total;"""
-    executeSqlInsert(sqlUpdateFeatureExecution)
+                SET FE.passed = x.total, FE.PassedDuration=x.passedDuration;"""
+    executeSQL(sqlUpdateFeatureExecution)
 
 #Update duration
     sqlUpdateFeatureExecution=f"""UPDATE {config['database']}.featureexecution FE
@@ -207,8 +206,8 @@ def databaseCummulative(executionStartTime):
                 where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
                 GROUP BY FeatureExecutionId
                 ) x ON FE.FeatureExecutionId = x.FeatureExecutionId 
-                SET FE.duration = x.total;"""
-    executeSqlInsert(sqlUpdateFeatureExecution)
+                SET FE.Totalduration = x.total;"""
+    executeSQL(sqlUpdateFeatureExecution)
 #_______________________________________________________________________________________
 def processJSON(cucumberTestRunFile, executionStartTime):
     executionData = json.load(open(cucumberTestRunFile))
