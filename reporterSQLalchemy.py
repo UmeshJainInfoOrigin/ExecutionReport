@@ -253,6 +253,9 @@ if __name__ == '__main__':
             config[key] = configCloud[key]
 
     executionStartTime = datetime.now()
+    sqlSelectTimeStamp=f"Select current_timestamp();"
+    result = executeSQL(sqlSelectTimeStamp)
+    executionSQLStartTime =result.fetchone()[0]
     inboundPath, processedPath = main(sys.argv[1:])
     dir_list = os.listdir(inboundPath)
     for cucumberTestRunFile in dir_list:
@@ -273,7 +276,7 @@ if __name__ == '__main__':
         if preValidation =="Failed" :
             print(preValidationMsg)
         else:
-            processJSON(cucumberTestRunFile,executionStartTime)
+            processJSON(cucumberTestRunFile,executionSQLStartTime)
             print("Successfully processed file...", cucumberTestRunFile)
             printRowsAdded()
             shutil.move( inboundPath + "/" + cucumberTestRunFile, processedPath +'/' + cucumberTestRunFile,)
