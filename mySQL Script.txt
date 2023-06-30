@@ -1,0 +1,96 @@
+CREATE TABLE `client` (
+  `ClientId` varchar(10) NOT NULL,
+  `ClientName` varchar(50) NOT NULL,
+  `Description` varchar(500) DEFAULT NULL,
+  `CreatedOn` datetime DEFAULT CURRENT_TIMESTAMP,
+  `CreatedBy` varchar(50) DEFAULT NULL,
+  PRIMARY KEY (`ClientId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `clientsponsor` (
+  `ClientId` varchar(10) NOT NULL,
+  `SponsorId` varchar(10) NOT NULL,
+  `SponsorName` varchar(50) NOT NULL,
+  `Designation` varchar(50) DEFAULT NULL,
+  `Department` varchar(10) DEFAULT NULL,
+  `CreatedBy` varchar(150) DEFAULT NULL,
+  `CreatedOn` datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`SponsorId`),
+  KEY `FK_ClientSponsor_Client` (`ClientId`),
+  CONSTRAINT `FK_ClientSponsor_Client` FOREIGN KEY (`ClientId`) REFERENCES `client` (`ClientId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `application` (
+  `SponsorId` varchar(10) DEFAULT NULL,
+  `ApplicationId` varchar(10) NOT NULL,
+  `ApplicationName` varchar(50) NOT NULL,
+  `Description` varchar(50) DEFAULT NULL,
+  `CreatedBy` varchar(150) DEFAULT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (`ApplicationId`),
+  KEY `FK_Application_ClientSponsor` (`SponsorId`),
+  CONSTRAINT `FK_Application_ClientSponsor` FOREIGN KEY (`SponsorId`) REFERENCES `clientsponsor` (`SponsorId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+	 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `featureexecution` (
+  `FeatureExecutionId` varchar(10) NOT NULL,
+  `FeatureId` varchar(10) NOT NULL,
+  `Duration` decimal(18,2) NOT NULL,
+  `TotalScenario` int NOT NULL,
+  `Passed` int DEFAULT '0',
+  `Failed` int DEFAULT '0',
+  `StartTime` datetime NOT NULL,
+  `CreatedBy` varchar(150) DEFAULT NULL,
+  `CreatedOn` timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  PRIMARY KEY (`FeatureExecutionId`),
+  KEY `FK_FeatureExecution_Feature` (`FeatureId`),
+  CONSTRAINT `FK_FeatureExecution_Feature` FOREIGN KEY (`FeatureId`) REFERENCES `feature` (`FeatureId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `scenario` (
+  `ScenarioExecutionId` varchar(10) NOT NULL,
+  `FeatureExecutionId` varchar(10) DEFAULT NULL,
+  `ScenarioId` varchar(50) NOT NULL,
+  `ScenarioName` varchar(150) DEFAULT NULL,
+  `Description` varchar(1200) DEFAULT NULL,
+  `Duration` decimal(18,2) DEFAULT '0.00',
+  `Status` varchar(15) DEFAULT 'Skipped',
+  `CreatedBy` varchar(50) DEFAULT NULL,
+  `CreatedOn` timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  PRIMARY KEY (`ScenarioExecutionId`,`ScenarioId`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `scenariostep` (
+  `ScenarioStepExecutionId` varchar(10) NOT NULL,
+  `ScenarioExecutionId` varchar(10) DEFAULT NULL,
+  `ScenarioId` varchar(50) DEFAULT NULL,
+  `Keyword` varchar(10) NOT NULL,
+  `Name` varchar(100) NOT NULL,
+  `Duration` decimal(18,2) NOT NULL DEFAULT '0.00',
+  `Status` varchar(20) NOT NULL,
+  `ErrorMessage` varchar(5750) DEFAULT NULL,
+  `CreatedBy` varchar(150) NOT NULL,
+  `CreatedOn` timestamp(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
+  PRIMARY KEY (`ScenarioStepExecutionId`),
+  CONSTRAINT `scenariostep_chk_1` CHECK (((`Keyword` = _utf8mb4'And') or (`Keyword` = _utf8mb4'Then') or (`Keyword` = _utf8mb4'When') or (`Keyword` = _utf8mb4'Given'))),
+  CONSTRAINT `scenariostep_chk_2` CHECK (((`Status` = _utf8mb4'Skipped') or (`Status` = _utf8mb4'Passed') or (`Status` = _utf8mb4'Failed')))
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+CREATE TABLE `feature_seq` (
+  `FeatureId` int NOT NULL AUTO_INCREMENT,
+  PRIMARY KEY (`FeatureId`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+DELIMITER $$
+CREATE TRIGGER tg_feature_insert
+BEFORE INSERT ON feature
+FOR EACH ROW
+BEGIN
+  INSERT INTO feature VALUES (NULL);
+  SET NEW.featureid = CONCAT('F', LPAD(LAST_INSERT_ID(), 3, '0'));
+END$$
+DELIMITER ;
+
+ALTER USER 'testdbuser'@'io-da-test-mysql-db.mysql.database.azure.com' IDENTIFIED BY 'myNewPass';

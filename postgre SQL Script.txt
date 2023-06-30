@@ -1,0 +1,104 @@
+SELECT * FROM application
+select * from client c 
+select * from fe
+
+CREATE TABLE client (
+  ClientId varchar(10) NOT NULL,
+  ClientName varchar(50) NOT NULL,
+  Description varchar(500) DEFAULT NULL,
+  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  CreatedBy varchar(50) DEFAULT NULL,
+  PRIMARY KEY (ClientId)
+)
+
+CREATE TABLE clientsponsor (
+  ClientId varchar(10) NOT NULL,
+  SponsorId varchar(10) NOT NULL,
+  SponsorName varchar(50) NOT NULL,
+  Designation varchar(50) DEFAULT NULL,
+  Department varchar(10) DEFAULT NULL,
+  CreatedBy varchar(150) DEFAULT NULL,
+  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (SponsorId)
+,
+  CONSTRAINT FK_ClientSponsor_Client FOREIGN KEY (ClientId) REFERENCES client (ClientId)
+)  
+
+CREATE INDEX FK_ClientSponsor_Client ON clientsponsor (ClientId);
+
+CREATE TABLE application (
+  SponsorId varchar(10) DEFAULT NULL,
+  ApplicationId varchar(10) NOT NULL,
+  ApplicationName varchar(50) NOT NULL,
+  Description varchar(50) DEFAULT NULL,
+  CreatedBy varchar(150) DEFAULT NULL,
+  CreatedOn timestamp(0) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (ApplicationId)
+,
+  CONSTRAINT FK_Application_ClientSponsor FOREIGN KEY (SponsorId) REFERENCES clientsponsor (SponsorId)
+)
+
+CREATE INDEX FK_Application_ClientSponsor ON application (SponsorId);
+
+CREATE TABLE feature (
+  ApplicationId varchar(10) NOT NULL,
+  FeatureId varchar(10) NOT NULL,
+  FeatureName varchar(150) DEFAULT NULL,
+  Description varchar(250) DEFAULT NULL,
+  Uri varchar(300) DEFAULT NULL,
+  CreatedBy varchar(150) DEFAULT NULL,
+  CreatedOn timestamp(2) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (FeatureId)
+,
+  CONSTRAINT FK_Feature_Application FOREIGN KEY (ApplicationId) REFERENCES application (ApplicationId)
+)
+
+CREATE INDEX FK_Feature_Application ON feature (ApplicationId);
+
+CREATE TABLE featureexecution (
+  FeatureExecutionId varchar(10) NOT NULL,
+  FeatureId varchar(10) NOT NULL,
+  TotalDuration decimal(18,2) NOT NULL,
+  TotalScenario int NOT NULL,
+  Passed int DEFAULT '0',
+  Failed int DEFAULT '0',
+  StartTime timestamp(0) NOT NULL,
+  CreatedBy varchar(50) DEFAULT NULL,
+  CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  FailedDuration decimal(18,2) DEFAULT '0.00',
+  PassedDuration decimal(18,2) DEFAULT '0.00',
+  PRIMARY KEY (FeatureExecutionId)
+,
+  CONSTRAINT FK_FeatureExecution_Feature FOREIGN KEY (FeatureId) REFERENCES feature (FeatureId)
+)  
+
+CREATE INDEX FK_FeatureExecution_Feature ON featureexecution (FeatureId);
+
+CREATE TABLE scenario (
+  ScenarioExecutionId varchar(10) NOT NULL,
+  FeatureExecutionId varchar(10) DEFAULT NULL,
+  ScenarioId varchar(50) NOT NULL,
+  ScenarioName varchar(150) DEFAULT NULL,
+  Description varchar(1200) DEFAULT NULL,
+  Duration decimal(18,2) DEFAULT '0.00',
+  Status varchar(15) DEFAULT 'Skipped',
+  CreatedBy varchar(50) DEFAULT NULL,
+  CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (ScenarioExecutionId,ScenarioId)
+)
+
+CREATE TABLE scenariostep (
+  ScenarioStepExecutionId varchar(10) NOT NULL,
+  ScenarioExecutionId varchar(10) DEFAULT NULL,
+  ScenarioId varchar(50) DEFAULT NULL,
+  Keyword varchar(10) NOT NULL,
+  Name varchar(100) NOT NULL,
+  Duration decimal(18,2) NOT NULL DEFAULT '0.00',
+  Status varchar(20) NOT NULL,
+  ErrorMessage varchar(5750) DEFAULT NULL,
+  CreatedBy varchar(150) NOT NULL,
+  CreatedOn timestamp(3) NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (ScenarioStepExecutionId),
+  CONSTRAINT scenariostep_chk_1 CHECK (((Keyword = 'And') or (Keyword = 'and') or (Keyword = 'Then') or (Keyword = 'Or') or (Keyword = 'When') or (Keyword = 'Given'))),
+  CONSTRAINT scenariostep_chk_2 CHECK (((Status = 'Skipped') or (Status = 'Passed') or (Status = 'passed') or (Status = 'Failed') or (Status = 'failed')))
+) 
