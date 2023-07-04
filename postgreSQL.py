@@ -7,7 +7,7 @@ import shutil
 import psycopg2
 #_______________________________________________________________________________________
 
-mySQLinCloud = False
+postgresSQLinCloud = True
 
 config = {
   'user': 'postgres',
@@ -16,20 +16,19 @@ config = {
   'database': 'postgres',
   'port' : 5432,
   'raise_on_warnings': True,
-  'ssl_ca': 'DigiCertGlobalRootCA.crt.pem',
-  'ssl_disabled' : False
-
+  'sslmode': "require",
+  'ssl_ca': 'PostgresDigiCertGlobalRootCA.crt.pem'
 }
 
 configCloud = {
   'user': 'testdbuser',
   'password': 'Scott123',
-  'host': 'io-da-test-mysql-db.mysql.database.azure.com',
+  'host': 'testdb-pg.postgres.database.azure.com',
   'database': 'test',
-  'port' : 3306,
+  'port' : 5432,
   'raise_on_warnings': True,
-  'ssl_ca': os.getcwd() + '/DigiCertGlobalRootCA.crt.pem',
-  'ssl_disabled' : False
+  'sslmode': "require",
+  'ssl_ca': os.getcwd() + '/PostgresDigiCertGlobalRootCA.crt.pem'
 }
 
 tableImpactedRowCount = {
@@ -45,13 +44,24 @@ def getFileModifiedTimeStamp(filePath):
 #_______________________________________________________________________________________
 
 def getConnection(config):
-    conn = psycopg2.connect(
-   database="postgres", 
-   user='postgres', 
-   password='postgres', 
-   host='127.0.0.1', 
-   port= '5432'
-)
+    if postgresSQLinCloud :
+        conn = psycopg2.connect(
+        database=config['database'], 
+        user=config['user'], 
+        password=config['password'], 
+        host=config['host'], 
+        port=config['port'],
+        sslmode=config['sslmode']
+        )
+    else:
+        conn = psycopg2.connect(
+        database=config['database'], 
+        user=config['user'], 
+        password=config['password'], 
+        host=config['host'], 
+        port=config['port']
+        )
+
     return conn    
 #_______________________________________________________________________________________
 
@@ -169,7 +179,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
             scenarioStatusFlag = False
         sqlInsertScenarioStep = f"""Insert into scenariostep 
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
-            values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}','{name}',{duration}, '{status}', '{errorMessage.replace("'", "''")}' ,'infoOrigin')"""
+            values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}','{name.replace("'", "''")}',{duration}, '{status}', '{errorMessage.replace("'", "''")}' ,'infoOrigin')"""
         #print(sqlInsertScenarioStep)
         executeSQL(sqlInsertScenarioStep)
         tableImpactedRowCount['scenarioStep'] = tableImpactedRowCount['scenarioStep'] + 1    
@@ -261,7 +271,7 @@ def main(argv):
     return inboundPath, processedPath
 #_______________________________________________________________________________________
 if __name__ == '__main__':
-    if mySQLinCloud :
+    if postgresSQLinCloud :
         for key in config.keys():
             config[key] = configCloud[key]
 
