@@ -1,0 +1,45 @@
+"FeatureExecutionId","featureid","TotalDuration","TotalScenario","StartTime","CreatedBy"
+"SSE1";"SE1";"@Test";"When";"User enters the text";"0.02";"passed";" ";"Info Origin"
+"SSE2";"SE1";"@Test";"Then";"User should see the text";"0";"passed";" ";"Info Origin"
+"SSE3";"SE2";"@SampleAPITest";"When";"User enter ''https://www.google.com/'' to open google";"4.04";"passed";" ";"Info Origin"
+"SSE4";"SE2";"@SampleAPITest";"Then";"Ensure that user will get isOk response";"0.0";"passed";" ";"Info Origin"
+"SSE5";"SE3";"@Platform";"Then";"Verify the ''Home Text'' as ''Home''";"0.18";"passed";" ";"Info Origin"
+"SSE6";"SE4";"@Platform";"Then";"Verify the ''Platform Text'' as ''Platform''";"0.05";"passed";" ";"Info Origin"
+"SSE7";"SE5";"@Leave_message";"When";"User clicks on ''Leave message''";"0.31";"passed";" ";"Info Origin"
+"SSE8";"SE5";"@Leave_message";"And";"User fills the message form";"0.85";"passed";" ";"Info Origin"
+"SSE9";"SE5";"@Leave_message";"Then";"User should verify ''Reset Button''";"0.04";"passed";" ";"Info Origin"
+"SSE10";"SE6";"@Service";"Then";"Verify the ''Services Text'' as ''Services''";"0.03";"passed";" ";"Info Origin"
+"SSE11";"SE7";"@Career";"Then";"Verify the ''Careers Text'' as ''Careers''";"0.04";"passed";" ";"Info Origin"
+"SSE12";"SE8";"@Outline_test";"When";"User clicks on ''Leave message''";"0.13";"passed";" ";"Info Origin"
+"SSE13";"SE8";"@Outline_test";"And";"User enters ''Name'' text as ''Disha''";"0.14";"passed";" ";"Info Origin"
+"SSE14";"SE8";"@Outline_test";"Then";"User should verify ''Reset Button''";"0.03";"passed";" ";"Info Origin"
+"SSE15";"SE9";"@Outline_test";"When";"User clicks on ''Leave message''";"0.12";"passed";" ";"Info Origin"
+"SSE16";"SE9";"@Outline_test";"And";"User enters ''Name'' text as ''Umesh''";"0.12";"passed";" ";"Info Origin"
+"SSE17";"SE9";"@Outline_test";"Then";"User should verify ''Reset Button''";"0.02";"passed";" ";"Info Origin"
+"SSE18";"SE10";"@IO";"And";"Verify the text ''Home Text'' as ''Home''";"0.02";"passed";" ";"Info Origin"
+"SSE19";"SE10";"@IO";"Then";"Verify the ''Home Text'' as ''OM''";"0.02";"failed";"java.lang.AssertionError: expected [OM] but found [Home]
+	at org.testng.Assert.fail(Assert.java:110)
+	at org.testng.Assert.failNotEquals(Assert.java:1413)
+	at org.testng.Assert.assertEqualsImpl(Assert.java:149)
+	at org.testng.Assert.assertEquals(Assert.java:131)
+	at org.testng.Assert.assertEquals(Assert.java:655)
+	at org.testng.Assert.assertEquals(Assert.java:665)
+	at com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(example.java:61)
+	at ✽.Verify the ''Home Text'' as ''OM''(file:///C:/Users/DishaHarinkhede/Disha/unified-automation-framework(Json-Reports)/unified-automation-framework/src/test/java/com/swissre/ioms/features/dummyUI/example3.feature:8)
+";"Info Origin"
+"SSE20";"SE11";"@Zoho";"When";"User clicks on ''Zoho Sign In''";"0.16";"passed";" ";"Info Origin"
+"SSE21";"SE11";"@Zoho";"And";"Enter ''Email'' text as ''utjain2000@gmail.com''";"0.17";"passed";" ";"Info Origin"
+"SSE22";"SE11";"@Zoho";"And";"User clicks on ''Email Next''";"0.12";"passed";" ";"Info Origin"
+"SSE23";"SE11";"@Zoho";"And";"Enter ''Email-Password'' text as ''GondiaRice@441601''";"0.16";"passed";" ";"Info Origin"
+"SSE24";"SE11";"@Zoho";"And";"User clicks on ''Sign In''";"0.13";"passed";" ";"Info Origin"
+"SSE25";"SE11";"@Zoho";"Then";"Verify the ''Welcome Label'' as ''Welcome utjain2000''";"0.02";"failed";"java.lang.AssertionError: expected [Welcome utjain2000] but found []
+	at org.testng.Assert.fail(Assert.java:110)
+	at org.testng.Assert.failNotEquals(Assert.java:1413)
+	at org.testng.Assert.assertEqualsImpl(Assert.java:149)
+	at org.testng.Assert.assertEquals(Assert.java:131)
+	at org.testng.Assert.assertEquals(Assert.java:655)
+	at org.testng.Assert.assertEquals(Assert.java:665)
+	at com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(example.java:61)
+	at ✽.Verify the ''Welcome Label'' as ''Welcome utjain2000''(file:///C:/Users/DishaHarinkhede/Disha/unified-automation-framework(Json-Reports)/unified-automation-framework/src/test/java/com/swissre/ioms/features/dummyUI/example3.feature:17)
+";"Info Origin"
+"SSE26";"SE11";"@Zoho";"Then";"Verify the ''My Open Deals Label'' as ''My Open Deals''";"0";"skipped";" ";"Info Origin"

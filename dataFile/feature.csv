@@ -1,0 +1,5 @@
+"applicationid","featureid","featurename","description","uri","createdby"
+"A6";"Tandem";"API test cases";"Test sample";"file:src/test/java/com/swissre/ioms/features/dummyAPI/example4.feature";"Info Origin"
+"A5";"IPTIQ";"UI test cases on IO leave message";"Sample Feature";"file:src/test/java/com/swissre/ioms/features/dummyUI/example1.feature";"Info Origin"
+"A7";"MySpend";"UI test cases on IO site";"User should verify various functionalities Infoorigin site";"file:src/test/java/com/swissre/ioms/features/dummyUI/example2.feature";"Info Origin"
+"A8";"CorSo";"UI test cases on IO and Zoho";"User should verify Infoorigin site";"file:src/test/java/com/swissre/ioms/features/dummyUI/example3.feature";"Info Origin"
