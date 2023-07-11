@@ -1,6 +1,6 @@
 [
   {
-    "description": "C1~S1~A1~F5~MenuVerifiedBy",
+    "description": "C1~S1~A1~F1~MenuVerifiedBy",
     "elements": [
       {
         "description": "InsideC1~S1~A1~F5~MenuVerified",
@@ -63,14 +63,7 @@
           }
         ],
         "tags": [
-          {
-            "name": "@healthcheck67",
-            "line": 5
-          },
-          {
-            "name": "@healthcheck7",
-            "line": 5
-          }
+          {"name": "@healthcheck66"}
         ],
         "type": "scenario"
       },
@@ -90,7 +83,7 @@
               "location": "not available:0"
             },
             "result": {
-              "error_message": "Timed out retrying after 4000ms: expected '<nb-tooltip.bottom>' to contain 'This is a tooltips'",
+              "error_message": "Timed out retrying after 4000ms: expected \"<nb-tooltip.bottom>\" to contain 'This is a tooltips'",
               "status": "failed",
               "duration": 1059000000
             }

@@ -1,0 +1,923 @@
+[
+    {
+      "line": 1,
+      "elements": [
+        {
+          "start_timestamp": "2023-06-09T08:17:47.594Z",
+          "before": [
+            {
+              "result": {
+                "duration": 4511700,
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 6,
+          "name": "Test sample",
+          "description": "",
+          "id": "test-sample;test-sample",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 16096700,
+                "status": "passed"
+              },
+              "line": 7,
+              "name": "User enters the text",
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.dummyAPI.example2.user_enters_the_text()"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "status": "passed"
+              },
+              "line": 8,
+              "name": "User should see the text",
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.dummyAPI.example2.user_should_see_the_text()"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Test"
+            },
+            {
+              "name": "@Regression"
+            },
+            {
+              "name": "@SampleAPITest"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:47.684Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 11,
+          "name": "Test API automation",
+          "description": "",
+          "id": "test-sample;test-api-automation",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 4043908100,
+                "status": "passed"
+              },
+              "line": 12,
+              "name": "User enter 'https://www.google.com/' to open google",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'https://www.google.com/'",
+                    "offset": 11
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyAPI.example2.userEnterToOpenGoogle(java.lang.String)"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "duration": 2001600,
+                "status": "passed"
+              },
+              "line": 13,
+              "name": "Ensure that user will get isOk response",
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.dummyAPI.example2.ensureThatUserWillGetIsOkResponse()"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@SampleAPITest"
+            },
+            {
+              "name": "@Combine"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        }
+      ],
+      "name": "Test sample",
+      "description": "  C2~S2~A2~F2~API test cases",
+      "id": "test-sample",
+      "keyword": "Feature",
+      "uri": "file:src/test/java/com/swissre/ioms/features/dummyAPI/example4.feature",
+      "tags": []
+    },
+    {
+      "line": 1,
+      "elements": [
+        {
+          "start_timestamp": "2023-06-09T08:17:51.747Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 6,
+          "name": "dummy_UI: Verify Home button in InfoOrigin website",
+          "description": "",
+          "id": "sample-feature;dummy-ui:-verify-home-button-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 184374100,
+                "status": "passed"
+              },
+              "line": 8,
+              "name": "Verify the 'Home Text' as 'Home'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Home Text'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'Home'",
+                    "offset": 26
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Platform"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Combine"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:51.945Z",
+          "before": [
+            {
+              "result": {
+                "duration": 998500,
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 11,
+          "name": "dummy_UI: Verify Platform button in InfoOrigin website",
+          "description": "",
+          "id": "sample-feature;dummy-ui:-verify-platform-button-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 53354500,
+                "status": "passed"
+              },
+              "line": 12,
+              "name": "Verify the 'Platform Text' as 'Platform'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Platform Text'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'Platform'",
+                    "offset": 30
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Platform"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:52.021Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 15,
+          "name": "dummy_UI: Fill Leave message form in InfoOrigin website",
+          "description": "",
+          "id": "sample-feature;dummy-ui:-fill-leave-message-form-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 312581900,
+                "status": "passed"
+              },
+              "line": 16,
+              "name": "User clicks on 'Leave message'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Leave message'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "duration": 853447700,
+                "status": "passed"
+              },
+              "line": 17,
+              "name": "User fills the message form",
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userFillsTheMessageForm(io.cucumber.datatable.DataTable)"
+              },
+              "rows": [
+                {
+                  "cells": [
+                    "Name",
+                    "Email",
+                    "Subject",
+                    "Message"
+                  ]
+                },
+                {
+                  "cells": [
+                    "Disha",
+                    "disha21@gmail.com",
+                    "Java",
+                    "Great leaning"
+                  ]
+                }
+              ],
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 41359400,
+                "status": "passed"
+              },
+              "line": 20,
+              "name": "User should verify 'Reset Button'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Reset Button'",
+                    "offset": 19
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userShouldVerify(java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Leave_message"
+            },
+            {
+              "name": "@DataTable_test"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        }
+      ],
+      "name": "Sample Feature",
+      "description": "   C1~S1~A3~F3~UI test cases on IO leave message",
+      "id": "sample-feature",
+      "keyword": "Feature",
+      "uri": "file:src/test/java/com/swissre/ioms/features/dummyUI/example1.feature",
+      "tags": []
+    },
+    {
+      "line": 1,
+      "elements": [
+        {
+          "start_timestamp": "2023-06-09T08:17:53.246Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 6,
+          "name": "dummy_UI: Verify Services button in InfoOrigin website",
+          "description": "",
+          "id": "user-should-verify-various-functionalities-infoorigin-site;dummy-ui:-verify-services-button-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 33858900,
+                "status": "passed"
+              },
+              "line": 7,
+              "name": "Verify the 'Services Text' as 'Services'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Services Text'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'Services'",
+                    "offset": 30
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Service"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Error_message"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:53.287Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 11,
+          "name": "dummy_UI: Verify Careers button in InfoOrigin website",
+          "description": "",
+          "id": "user-should-verify-various-functionalities-infoorigin-site;dummy-ui:-verify-careers-button-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 38093900,
+                "status": "passed"
+              },
+              "line": 12,
+              "name": "Verify the 'Careers Text' as 'Careers'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Careers Text'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'Careers'",
+                    "offset": 29
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Career"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:53.335Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 21,
+          "name": "dummy_UI: Verify Careers button in InfoOrigin website",
+          "description": "",
+          "id": "user-should-verify-various-functionalities-infoorigin-site;dummy-ui:-verify-careers-button-in-infoorigin-website;;2",
+          "type": "scenario",
+          "keyword": "Scenario Outline",
+          "steps": [
+            {
+              "result": {
+                "duration": 131093900,
+                "status": "passed"
+              },
+              "line": 16,
+              "name": "User clicks on 'Leave message'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Leave message'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "duration": 142762200,
+                "status": "passed"
+              },
+              "line": 17,
+              "name": "User enters 'Name' text as 'Disha'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Name'",
+                    "offset": 12
+                  },
+                  {
+                    "val": "'Disha'",
+                    "offset": 27
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userEntersTextAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 32563000,
+                "status": "passed"
+              },
+              "line": 18,
+              "name": "User should verify 'Reset Button'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Reset Button'",
+                    "offset": 19
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userShouldVerify(java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Outline_test"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:53.652Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 22,
+          "name": "dummy_UI: Verify Careers button in InfoOrigin website",
+          "description": "",
+          "id": "user-should-verify-various-functionalities-infoorigin-site;dummy-ui:-verify-careers-button-in-infoorigin-website;;3",
+          "type": "scenario",
+          "keyword": "Scenario Outline",
+          "steps": [
+            {
+              "result": {
+                "duration": 118829600,
+                "status": "passed"
+              },
+              "line": 16,
+              "name": "User clicks on 'Leave message'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Leave message'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "duration": 116248700,
+                "status": "passed"
+              },
+              "line": 17,
+              "name": "User enters 'Name' text as 'Umesh'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Name'",
+                    "offset": 12
+                  },
+                  {
+                    "val": "'Umesh'",
+                    "offset": 27
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userEntersTextAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 22601300,
+                "status": "passed"
+              },
+              "line": 18,
+              "name": "User should verify 'Reset Button'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Reset Button'",
+                    "offset": 19
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.userShouldVerify(java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Outline_test"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        }
+      ],
+      "name": "User should verify various functionalities Infoorigin site",
+      "description": "  C1~S3~A7~F8~UI test cases on IO site",
+      "id": "user-should-verify-various-functionalities-infoorigin-site",
+      "keyword": "Feature",
+      "uri": "file:src/test/java/com/swissre/ioms/features/dummyUI/example2.feature",
+      "tags": []
+    },
+    {
+      "line": 1,
+      "elements": [
+        {
+          "start_timestamp": "2023-06-09T08:17:53.918Z",
+          "before": [
+            {
+              "result": {
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 6,
+          "name": "dummy_UI: Scenario Verify Home button in InfoOrigin website",
+          "description": "",
+          "id": "user-should-verify-infoorigin-site;dummy-ui:-scenario-verify-home-button-in-infoorigin-website",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 24657900,
+                "status": "passed"
+              },
+              "line": 7,
+              "name": "Verify the text 'Home Text' as 'Home'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Home Text'",
+                    "offset": 16
+                  },
+                  {
+                    "val": "'Home'",
+                    "offset": 31
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheTextHomeTextAsHome(java.lang.String,java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "error_message": "java.lang.AssertionError: expected [OM] but found [Home]\r\n\tat org.testng.Assert.fail(Assert.java:110)\r\n\tat org.testng.Assert.failNotEquals(Assert.java:1413)\r\n\tat org.testng.Assert.assertEqualsImpl(Assert.java:149)\r\n\tat org.testng.Assert.assertEquals(Assert.java:131)\r\n\tat org.testng.Assert.assertEquals(Assert.java:655)\r\n\tat org.testng.Assert.assertEquals(Assert.java:665)\r\n\tat com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(example.java:61)\r\n\tat ✽.Verify the 'Home Text' as 'OM'(file:///C:/Users/DishaHarinkhede/Disha/unified-automation-framework(Json-Reports)/unified-automation-framework/src/test/java/com/swissre/ioms/features/dummyUI/example3.feature:8)\r\n",
+                "duration": 22930900,
+                "status": "failed"
+              },
+              "line": 8,
+              "name": "Verify the 'Home Text' as 'OM'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Home Text'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'OM'",
+                    "offset": 26
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@IO"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        },
+        {
+          "start_timestamp": "2023-06-09T08:17:53.980Z",
+          "before": [
+            {
+              "result": {
+                "duration": 1000900,
+                "status": "passed"
+              },
+              "match": {
+                "location": "com.swissre.ioms.stepDefinitions.sharedHooks.scenarioHook.before_Scenario(io.cucumber.java.Scenario)"
+              }
+            }
+          ],
+          "line": 11,
+          "name": "dummy_UI: Scenario to login into Zoho",
+          "description": "",
+          "id": "user-should-verify-infoorigin-site;dummy-ui:-scenario-to-login-into-zoho",
+          "type": "scenario",
+          "keyword": "Scenario",
+          "steps": [
+            {
+              "result": {
+                "duration": 156597600,
+                "status": "passed"
+              },
+              "line": 12,
+              "name": "User clicks on 'Zoho Sign In'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Zoho Sign In'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "When "
+            },
+            {
+              "result": {
+                "duration": 168276600,
+                "status": "passed"
+              },
+              "line": 13,
+              "name": "Enter 'Email' text as 'utjain2000@gmail.com'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Email'",
+                    "offset": 6
+                  },
+                  {
+                    "val": "'utjain2000@gmail.com'",
+                    "offset": 22
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.enter_text_as(java.lang.String,java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 120519700,
+                "status": "passed"
+              },
+              "line": 14,
+              "name": "User clicks on 'Email Next'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Email Next'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 163301200,
+                "status": "passed"
+              },
+              "line": 15,
+              "name": "Enter 'Email-Password' text as 'GondiaRice@441601'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Email-Password'",
+                    "offset": 6
+                  },
+                  {
+                    "val": "'GondiaRice@441601'",
+                    "offset": 31
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.enter_text_as(java.lang.String,java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "duration": 125424200,
+                "status": "passed"
+              },
+              "line": 16,
+              "name": "User clicks on 'Sign In'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Sign In'",
+                    "offset": 15
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.user_clicks_on(java.lang.String)"
+              },
+              "keyword": "And "
+            },
+            {
+              "result": {
+                "error_message": "java.lang.AssertionError: expected [Welcome utjain2000] but found []\r\n\tat org.testng.Assert.fail(Assert.java:110)\r\n\tat org.testng.Assert.failNotEquals(Assert.java:1413)\r\n\tat org.testng.Assert.assertEqualsImpl(Assert.java:149)\r\n\tat org.testng.Assert.assertEquals(Assert.java:131)\r\n\tat org.testng.Assert.assertEquals(Assert.java:655)\r\n\tat org.testng.Assert.assertEquals(Assert.java:665)\r\n\tat com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(example.java:61)\r\n\tat ✽.Verify the 'Welcome Label' as 'Welcome utjain2000'(file:///C:/Users/DishaHarinkhede/Disha/unified-automation-framework(Json-Reports)/unified-automation-framework/src/test/java/com/swissre/ioms/features/dummyUI/example3.feature:17)\r\n",
+                "duration": 19762800,
+                "status": "failed"
+              },
+              "line": 17,
+              "name": "Verify the 'Welcome Label' as 'Welcome utjain2000'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'Welcome Label'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'Welcome utjain2000'",
+                    "offset": 30
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            },
+            {
+              "result": {
+                "status": "skipped"
+              },
+              "line": 18,
+              "name": "Verify the 'My Open Deals Label' as 'My Open Deals'",
+              "match": {
+                "arguments": [
+                  {
+                    "val": "'My Open Deals Label'",
+                    "offset": 11
+                  },
+                  {
+                    "val": "'My Open Deals'",
+                    "offset": 36
+                  }
+                ],
+                "location": "com.swissre.ioms.stepDefinitions.dummyUI.example.verifyTheAs(java.lang.String,java.lang.String)"
+              },
+              "keyword": "Then "
+            }
+          ],
+          "tags": [
+            {
+              "name": "@Zoho"
+            },
+            {
+              "name": "@Umesh"
+            },
+            {
+              "name": "@SampleUITest"
+            },
+            {
+              "name": "@Regression"
+            }
+          ]
+        }
+      ],
+      "name": "User should verify Infoorigin site",
+      "description": "  C1~S1~A8~F9~UI test cases on IO and Zoho",
+      "id": "user-should-verify-infoorigin-site",
+      "keyword": "Feature",
+      "uri": "file:src/test/java/com/swissre/ioms/features/dummyUI/example3.feature",
+      "tags": []
+    }
+  ]

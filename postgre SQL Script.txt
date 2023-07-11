@@ -1,6 +1,42 @@
+delete from application;
+delete from clientsponsor;
+delete from client
+Delete from featureexecution where Featureid<>'a';
+Delete from feature where Featureid<>'a';
+Delete from scenario where featureExecutionId <> 'F';
+Delete from scenarioStep where scenarioExecutionId <> 'F';
+
+select * from public.application
+
+SELECT *
+  FROM information_schema.columns
+ WHERE table_schema = 'public'
+   AND table_name   = 'client'
+     ;
+
+copy client from '/Users/UmeshJain/OneDrive - Info Origin Technologies Pvt Ltd/Desktop/client.csv' DELIMITER ',' 
+CSV header QUOTE AS  '"' 
+
+copy clientsponsor from 'D:/ExecutionReport/clientSponsor.csv' DELIMITER ';' 
+CSV header QUOTE AS  '"' 
+
+copy application from 'D:/ExecutionReport/application.csv' DELIMITER ';' 
+CSV header QUOTE AS  '"' 
+
+
 SELECT * FROM application
-select * from client c 
-select * from fe
+select * from client
+
+
+select distinct ScenarioExecutionId,
+       case when exists (select 1 from scenariostep t2 where t1.ScenarioExecutionId = T2.ScenarioExecutionId 
+       and T2.status = 'failed'
+       
+       ) 
+       then 'failed' else 'pass' end as Result
+from scenariostep t1
+where createdon >= '2023-07-08 12:39:39'
+
 
 CREATE TABLE client (
   ClientId varchar(10) NOT NULL,

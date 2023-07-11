@@ -127,7 +127,7 @@ def getNextValAllTable():
     tableNextValDict['featureExecution'] = getNextVal('featureExecution', 'featureExecutionId', 'FE')
     tableNextValDict['scenario'] = getNextVal('scenario', 'scenarioExecutionId', 'SE')
     tableNextValDict['scenarioStep'] = getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE')
-    print('tableNextValDict=', tableNextValDict)
+    #print('tableNextValDict=', tableNextValDict)
 #_______________________________________________________________________________________    
 def createFileWithHeader(fileName, header):
     with open(dataFilePath + fileName + '.csv', 'w', newline='') as f:
@@ -332,8 +332,18 @@ def databaseCummulative(executionStartTime):
                 GROUP BY FeatureExecutionId
                 ) x 
                 WHERE FE.FeatureExecutionId = x.FeatureExecutionId ;"""
+    
     executeSQL(sqlUpdateFeatureExecution)
-
+#update status in scenario from scenarioStep
+    sqlUpdateScenario = f"""UPDATE scenario s SET status = x.status
+                        FROM (select distinct ScenarioExecutionId,
+                        case when exists (select 1 from scenariostep t2 where t1.ScenarioExecutionId = T2.ScenarioExecutionId and (T2.status = 'failed' or T2.status='skipped')) then 'failed' else 'passed' end as status
+                        from scenariostep t1
+                        where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
+                        ) x 
+                        WHERE s.ScenarioExecutionId = x.ScenarioExecutionId"""
+    #print(sqlUpdateScenario)
+    executeSQL(sqlUpdateScenario)
 #_______________________________________________________________________________________
 def processJSON(cucumberTestRunFile, executionStartTime):
     
@@ -342,7 +352,7 @@ def processJSON(cucumberTestRunFile, executionStartTime):
         featureId = featureTable(featureFile)
         featureExecutionId = featureExecutionTable(featureFile,featureId)
         scenarioTable(featureFile,featureExecutionId)
-        databaseCummulative(executionStartTime)
+        
 #_______________________________________________________________________________________
 def printRowsAdded():
     for k, v in tableImpactedRowCount.items():
@@ -424,9 +434,11 @@ if __name__ == '__main__':
             loadDataUsingCopy('scenario','ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy', 'ScenarioExecutionId')
             #ScenarioStep
             loadDataUsingCopy('scenariostep','ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy', 'ScenarioStepExecutionId')
+            databaseCummulative(executionStartTime)
+            removeFiles()
     #executeSQL(copyFeatureExecution)
     #FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy
-    #removeFiles()
+    
     executionEndTime = datetime.now()
     print('Total Execution Time=', executionEndTime - executionStartTime)
 
