@@ -24,7 +24,7 @@ use this command SET SQL_SAFE_UPDATES = 0;
 
 # Configuration
 * Insert Data into 3 Master Tables
-    - Client Table
+- Client Table
 
     ClientID | ClientName | Description | CreatedBy | CreatedOn
     --- | --- | --- | --- |--- 
@@ -57,14 +57,23 @@ use this command SET SQL_SAFE_UPDATES = 0;
         C1~S1~A1~??~Description of Feature
         - Subsequent execution C1~S1~A1~F1~Description of Feature
     - Scenario
-        - Description should include unique Test case number
+        1. Description should include unique Test case number
         Example:
             - TC01, TC02, ....
+        2. Data in Given/When/Then should be written in single quote(') not using double quote (")
 * Cucumber 
     -  It should be configured to generate the .JSON file after execution summary
+    
+    Cypress | Selenium  
+    --- | --- 
+    package.json |@CucumberOptions  | 23  |  
+    "json": { "enabled": true,"output": "cypress/cucumberReports/results.json"} | plugin = {json:target/cucumber-reports/CucumberRunnerTest.json"}   
+
+                
+
 * Python Code
     - Generated .JSON file should be placed in inboundJSONReports Directory
     - Execute the python code which will ingest data into mySQL or Postgres as per configuration
     - Upon successful ingestion all .JSON will be moved to processedJSONReports directory
 * Power BI
-    - Based on your role, access dashboard available in power BI using below URL
+    - Based on your role, access are available in dashboard of power BI using below URL
