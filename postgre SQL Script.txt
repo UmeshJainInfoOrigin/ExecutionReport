@@ -38,16 +38,25 @@ from scenariostep t1
 where createdon >= '2023-07-08 12:39:39'
 
 
-CREATE TABLE client (
+CREATE TABLE if not exists client (
   ClientId varchar(10) NOT NULL,
   ClientName varchar(50) NOT NULL,
   Description varchar(500) DEFAULT NULL,
   CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
   CreatedBy varchar(50) DEFAULT NULL,
   PRIMARY KEY (ClientId)
-)
+);
 
-CREATE TABLE clientsponsor (
+CREATE TABLE if not exists releases (
+  ReleaseId varchar(10) NOT NULL,
+  Description varchar(50) DEFAULT NULL,
+  livedate date NOT NULL,
+  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  CreatedBy varchar(50) DEFAULT NULL,
+  PRIMARY KEY (ReleaseId)
+);
+
+CREATE TABLE if not exists clientsponsor (
   ClientId varchar(10) NOT NULL,
   SponsorId varchar(10) NOT NULL,
   SponsorName varchar(50) NOT NULL,
@@ -58,11 +67,11 @@ CREATE TABLE clientsponsor (
   PRIMARY KEY (SponsorId)
 ,
   CONSTRAINT FK_ClientSponsor_Client FOREIGN KEY (ClientId) REFERENCES client (ClientId)
-)  
+); 
 
 CREATE INDEX FK_ClientSponsor_Client ON clientsponsor (ClientId);
 
-CREATE TABLE application (
+CREATE TABLE if not exists application (
   SponsorId varchar(10) DEFAULT NULL,
   ApplicationId varchar(10) NOT NULL,
   ApplicationName varchar(50) NOT NULL,
@@ -72,11 +81,11 @@ CREATE TABLE application (
   PRIMARY KEY (ApplicationId)
 ,
   CONSTRAINT FK_Application_ClientSponsor FOREIGN KEY (SponsorId) REFERENCES clientsponsor (SponsorId)
-)
+);
 
 CREATE INDEX FK_Application_ClientSponsor ON application (SponsorId);
 
-CREATE TABLE feature (
+CREATE TABLE if not exists feature (
   ApplicationId varchar(10) NOT NULL,
   FeatureId varchar(10) NOT NULL,
   FeatureName varchar(150) DEFAULT NULL,
@@ -87,30 +96,32 @@ CREATE TABLE feature (
   PRIMARY KEY (FeatureId)
 ,
   CONSTRAINT FK_Feature_Application FOREIGN KEY (ApplicationId) REFERENCES application (ApplicationId)
-)
+);
 
 CREATE INDEX FK_Feature_Application ON feature (ApplicationId);
 
-CREATE TABLE featureexecution (
+CREATE TABLE if not exists featureexecution (
   FeatureExecutionId varchar(10) NOT NULL,
   FeatureId varchar(10) NOT NULL,
   TotalDuration decimal(18,2) NOT NULL,
   TotalScenario int NOT NULL,
-  Passed int DEFAULT '0',
   Failed int DEFAULT '0',
-  StartTime timestamp(0) NOT NULL,
-  CreatedBy varchar(50) DEFAULT NULL,
-  CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  Passed int DEFAULT '0',
   FailedDuration decimal(18,2) DEFAULT '0.00',
   PassedDuration decimal(18,2) DEFAULT '0.00',
-  PRIMARY KEY (FeatureExecutionId)
-,
-  CONSTRAINT FK_FeatureExecution_Feature FOREIGN KEY (FeatureId) REFERENCES feature (FeatureId)
-)  
+  StartTime timestamp(0) NOT NULL,
+  ReleaseId varchar(75) NULL,
+  CreatedBy varchar(50) DEFAULT NULL,
+  CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  PRIMARY KEY (FeatureExecutionId),
+  CONSTRAINT FK_FeatureExecution_Feature FOREIGN KEY (FeatureId) REFERENCES feature (FeatureId),
+  CONSTRAINT FK_FeatureExecution_Release FOREIGN KEY (ReleaseId) REFERENCES releases (ReleaseId)
+);
+
 
 CREATE INDEX FK_FeatureExecution_Feature ON featureexecution (FeatureId);
 
-CREATE TABLE scenario (
+CREATE TABLE if not exists scenario (
   ScenarioExecutionId varchar(10) NOT NULL,
   FeatureExecutionId varchar(10) DEFAULT NULL,
   ScenarioId varchar(50) NOT NULL,
@@ -118,12 +129,13 @@ CREATE TABLE scenario (
   Description varchar(1200) DEFAULT NULL,
   Duration decimal(18,2) DEFAULT '0.00',
   Status varchar(15) DEFAULT 'Skipped',
+  tags varchar(75) NULL,
   CreatedBy varchar(50) DEFAULT NULL,
   CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (ScenarioExecutionId,ScenarioId)
-)
+);
 
-CREATE TABLE scenariostep (
+CREATE TABLE if not exists scenariostep (
   ScenarioStepExecutionId varchar(10) NOT NULL,
   ScenarioExecutionId varchar(10) DEFAULT NULL,
   ScenarioId varchar(50) DEFAULT NULL,
@@ -136,5 +148,32 @@ CREATE TABLE scenariostep (
   CreatedOn timestamp(3) NULL DEFAULT CURRENT_TIMESTAMP,
   PRIMARY KEY (ScenarioStepExecutionId),
   CONSTRAINT scenariostep_chk_1 CHECK (((Keyword = 'And') or (Keyword = 'and') or (Keyword = 'Then') or (Keyword = 'Or') or (Keyword = 'When') or (Keyword = 'Given'))),
-  CONSTRAINT scenariostep_chk_2 CHECK (((Status = 'Skipped') or (Status = 'Passed') or (Status = 'passed') or (Status = 'Failed') or (Status = 'failed')))
-) 
+  CONSTRAINT scenariostep_chk_2 CHECK (((Status = 'Skipped') or (Status = 'skipped') or (Status = 'Passed') or (Status = 'passed') or (Status = 'Failed') or (Status = 'failed')))
+); 
+
+INSERT INTO client (clientid,clientname,description,createdby) VALUES
+	 ('C1','Swiss Re','','Info Origin'),
+	 ('C2','Dell Computers','','Info Origin');
+
+INSERT INTO releases
+(releaseid, description, livedate, createdon, createdby)VALUES
+('R1', 'Pom with feature F1', '2023-12-30', '2023-08-04 19:30:47.000', 'InfoOrigin'),
+('R2', 'Tandom with functionality', '2023-08-31', '2023-08-04 19:30:47.000', 'InfoOrigin');
+
+
+INSERT INTO clientsponsor (clientid,sponsorid,sponsorname,designation,department,createdby) VALUES
+	 ('C1','S1','Pavitra','VP','Testing','Info Origin'),
+	 ('C1','S2','John','VP','Testing','Info Origin'),
+	 ('C1','S3','Smith','AVP','Testing','Info Origin');
+
+INSERT INTO application (sponsorid,applicationid,applicationname,description,createdby) VALUES
+	 ('S1','A1','POM','','Info Origin'),
+	 ('S1','A2','Tandam','','Info Origin'),
+	 ('S2','A3','MyExpense','','Info Origin'),
+	 ('S3','A4','IOS','','Info Origin'),
+	 ('S3','A5','DocGen','','Info Origin'),
+	 ('S1','A6','Prolite','','Info Origin'),
+	 ('S2','A7','MySpend','','Info Origin'),
+	 ('S1','A8','Corso','','Info Origin');
+
+

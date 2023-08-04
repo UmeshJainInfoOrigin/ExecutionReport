@@ -7,7 +7,7 @@ import shutil
 import psycopg2
 #_______________________________________________________________________________________
 
-postgresSQLinCloud = True
+postgresSQLinCloud = False
 
 config = {
   'user': 'postgres',
@@ -17,18 +17,18 @@ config = {
   'port' : 5432,
   'raise_on_warnings': True,
   'sslmode': "require",
-  'ssl_ca': 'PostgresDigiCertGlobalRootCA.crt.pem'
+  
 }
 
 configCloud = {
   'user': 'testdbuser',
   'password': 'Scott123',
   'host': 'testdb-pg.postgres.database.azure.com',
-  'database': 'test',
+  'database': 'portfolio-dev',
   'port' : 5432,
   'raise_on_warnings': True,
   'sslmode': "require",
-  'ssl_ca': os.getcwd() + '/PostgresDigiCertGlobalRootCA.crt.pem'
+  
 }
 
 tableImpactedRowCount = {
@@ -110,7 +110,7 @@ def getNextVal(tableName, colName, prefixChar):
 #_______________________________________________________________________________________    
 
 def featureTable(executionData):
-    clientId,sponsorId, applicationId,featureId,featureName = getAttribute(executionData, "description").split('~')
+    clientId,sponsorId, applicationId,featureId,featureName,releaseId = getAttribute(executionData, "description").split('~')
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
@@ -127,6 +127,8 @@ def featureTable(executionData):
 #_______________________________________________________________________________________
 
 def featureExecutionTable(executionData,featureId):
+    #description: C1~S1~A1~F1~R1~MenuVerifiedBy
+    releaseId = getAttribute(executionData, "description").split('~')[4]
     df = pd.json_normalize(executionData,record_path='elements')
     if 'start_timestamp' in df:
         startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
@@ -137,8 +139,8 @@ def featureExecutionTable(executionData,featureId):
     tcDuration=1
     totalScenario = df['steps'].count()
     sqlInsertFeatureExecution = f"""Insert into featureexecution 
-    (FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy)
-    values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin');"""
+    (FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy,releaseId)
+    values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin', '{releaseId}');"""
     executeSQL(sqlInsertFeatureExecution)
     tableImpactedRowCount['featureExecution'] = tableImpactedRowCount['featureExecution'] + 1    
     return featureExecutionId
@@ -146,15 +148,23 @@ def featureExecutionTable(executionData,featureId):
 
 def scenarioTable(executionData,featureExecutionId):
     df = pd.json_normalize(executionData,record_path='elements')
-    for index, scenarioName in enumerate(df['name'].tolist()):
+    for index, fullScenarioName in enumerate(df['name'].tolist()):
         scenarioExecutionId = 'SE' + str(getNextVal('scenario', 'scenarioExecutionId', 'SE'))
-        scenarioId = df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags'
+        #scenarioId = df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags'
+        tags = []
+        for i in df['tags'][index]:
+            tags.append(i['name'])
+    
+        scenarioId = fullScenarioName.split("~")[0] if "~" in fullScenarioName else 'TC_Auto'
+        scenarioName = fullScenarioName.split("~")[1] if "~" in fullScenarioName else 'Scenario Name_Auto'
         description= df['description'][index]
         duration=1
         sqlInsertScenario = f"""Insert into scenario 
-        (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy)
-        values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin');"""
+        (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy, tags)
+        values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin', '{",".join(tags)}');"""
+
         executeSQL(sqlInsertScenario)
+
         dfScenarioSectionDF = df['steps'][index]
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
         tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1    

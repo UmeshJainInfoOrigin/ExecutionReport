@@ -5,7 +5,17 @@ CREATE TABLE `client` (
   `CreatedOn` datetime DEFAULT CURRENT_TIMESTAMP,
   `CreatedBy` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`ClientId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+);
+
+CREATE TABLE if not exists releases (
+  ReleaseId varchar(10) NOT NULL,
+  Description varchar(50) DEFAULT NULL,
+  livedate date NOT NULL,
+  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  CreatedBy varchar(50) DEFAULT NULL,
+  PRIMARY KEY (ReleaseId)
+);
+
 
 CREATE TABLE `clientsponsor` (
   `ClientId` varchar(10) NOT NULL,
@@ -18,7 +28,7 @@ CREATE TABLE `clientsponsor` (
   PRIMARY KEY (`SponsorId`),
   KEY `FK_ClientSponsor_Client` (`ClientId`),
   CONSTRAINT `FK_ClientSponsor_Client` FOREIGN KEY (`ClientId`) REFERENCES `client` (`ClientId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+);
 
 CREATE TABLE `application` (
   `SponsorId` varchar(10) DEFAULT NULL,
@@ -30,24 +40,40 @@ CREATE TABLE `application` (
   PRIMARY KEY (`ApplicationId`),
   KEY `FK_Application_ClientSponsor` (`SponsorId`),
   CONSTRAINT `FK_Application_ClientSponsor` FOREIGN KEY (`SponsorId`) REFERENCES `clientsponsor` (`SponsorId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+);
 
-	 ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+CREATE TABLE if not exists feature (
+  ApplicationId varchar(10) NOT NULL,
+  FeatureId varchar(10) NOT NULL,
+  FeatureName varchar(150) DEFAULT NULL,
+  Description varchar(250) DEFAULT NULL,
+  Uri varchar(300) DEFAULT NULL,
+  CreatedBy varchar(150) DEFAULT NULL,
+  `CreatedOn` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (FeatureId)
+,
+  CONSTRAINT FK_Feature_Application FOREIGN KEY (ApplicationId) REFERENCES application (ApplicationId)
+);
 
 CREATE TABLE `featureexecution` (
   `FeatureExecutionId` varchar(10) NOT NULL,
   `FeatureId` varchar(10) NOT NULL,
-  `Duration` decimal(18,2) NOT NULL,
+  `TotalDuration` decimal(18,2) NOT NULL,
   `TotalScenario` int NOT NULL,
   `Passed` int DEFAULT '0',
   `Failed` int DEFAULT '0',
+  `FailedDuration` decimal(18,2) DEFAULT '0.00',
+  `PassedDuration` decimal(18,2) DEFAULT '0.00',
+  'ReleaseId' varchar(75) NULL,
   `StartTime` datetime NOT NULL,
   `CreatedBy` varchar(150) DEFAULT NULL,
   `CreatedOn` timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
+  
   PRIMARY KEY (`FeatureExecutionId`),
   KEY `FK_FeatureExecution_Feature` (`FeatureId`),
-  CONSTRAINT `FK_FeatureExecution_Feature` FOREIGN KEY (`FeatureId`) REFERENCES `feature` (`FeatureId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  CONSTRAINT `FK_FeatureExecution_Feature` FOREIGN KEY (`FeatureId`) REFERENCES `feature` (`FeatureId`),
+  CONSTRAINT `FK_FeatureExecution_Release` FOREIGN KEY (`ReleaseId`) REFERENCES `release` (`ReleaseId`)
+); 
 
 CREATE TABLE `scenario` (
   `ScenarioExecutionId` varchar(10) NOT NULL,
@@ -57,10 +83,11 @@ CREATE TABLE `scenario` (
   `Description` varchar(1200) DEFAULT NULL,
   `Duration` decimal(18,2) DEFAULT '0.00',
   `Status` varchar(15) DEFAULT 'Skipped',
+  `tags` varchar(75) NULL,
   `CreatedBy` varchar(50) DEFAULT NULL,
   `CreatedOn` timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP(2),
   PRIMARY KEY (`ScenarioExecutionId`,`ScenarioId`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+);
 
 CREATE TABLE `scenariostep` (
   `ScenarioStepExecutionId` varchar(10) NOT NULL,
@@ -74,9 +101,9 @@ CREATE TABLE `scenariostep` (
   `CreatedBy` varchar(150) NOT NULL,
   `CreatedOn` timestamp(3) NULL DEFAULT CURRENT_TIMESTAMP(3),
   PRIMARY KEY (`ScenarioStepExecutionId`),
-  CONSTRAINT `scenariostep_chk_1` CHECK (((`Keyword` = _utf8mb4'And') or (`Keyword` = _utf8mb4'Then') or (`Keyword` = _utf8mb4'When') or (`Keyword` = _utf8mb4'Given'))),
-  CONSTRAINT `scenariostep_chk_2` CHECK (((`Status` = _utf8mb4'Skipped') or (`Status` = _utf8mb4'Passed') or (`Status` = _utf8mb4'Failed')))
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+  CONSTRAINT scenariostep_chk_1 CHECK (((Keyword = 'And') or (Keyword = 'and') or (Keyword = 'Then') or (Keyword = 'Or') or (Keyword = 'When') or (Keyword = 'Given'))),
+  CONSTRAINT scenariostep_chk_2 CHECK (((Status = 'Skipped') or (Status = 'Passed') or (Status = 'passed') or (Status = 'Failed') or (Status = 'failed')))
+);
 
 CREATE TABLE `feature_seq` (
   `FeatureId` int NOT NULL AUTO_INCREMENT,
