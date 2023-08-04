@@ -25,11 +25,15 @@ use this command SET SQL_SAFE_UPDATES = 0;
 # Configuration
 * Insert Data into 3 Master Tables
 - Client Table
-
     ClientID | ClientName | Description | CreatedBy | CreatedOn
     --- | --- | --- | --- |--- 
     C1 | Dell | BFSI | 24-Jul-23  | InfoOrigin 
     C2 | HP | Laptop | 22-Jul-23  | InfoOrigin 
+- Releases Table
+    ReleaseID | Description | liveDate | CreatedBy | CreatedOn
+    --- | --- | --- | --- |--- 
+    R1 | Pom with Feature F1 | 31-Dec-2023 | 24-Jul-23  | InfoOrigin 
+    R2 | Tandem functinality of feedback | 30-Sep-2023 | 22-Jul-23  | InfoOrigin 
 
 - ClientSponsor Table
     ClientID | SponsorID | Sponsor Name | Designation | Department | CreatedBy | CreatedOn
@@ -54,8 +58,8 @@ use this command SET SQL_SAFE_UPDATES = 0;
         
         Example:- 
         - First execution
-        C1~S1~A1~??~Description of Feature
-        - Subsequent execution C1~S1~A1~F1~Description of Feature
+        C1~S1~A1~??~R1~Description of Feature
+        - Subsequent execution C1~S1~A1~F1~R1~Description of Feature
     - Scenario
         1. Description should include unique Test case number
         Example:
