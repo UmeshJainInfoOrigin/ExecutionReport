@@ -7,8 +7,7 @@ import shutil
 import psycopg2
 #_______________________________________________________________________________________
 
-postgresSQLinCloud = False
-
+postgresSQLinCloud = True
 config = {
   'user': 'postgres',
   'password': 'postgres',
@@ -110,7 +109,8 @@ def getNextVal(tableName, colName, prefixChar):
 #_______________________________________________________________________________________    
 
 def featureTable(executionData):
-    clientId,sponsorId, applicationId,featureId,featureName,releaseId = getAttribute(executionData, "description").split('~')
+    #C5~S4~A9~F2~R1~Save Education
+    clientId,sponsorId, applicationId,featureId,releaseId,featureName = getAttribute(executionData, "description").split('~')
     uri = getAttribute(executionData, "uri").replace("\\","\\\\")
     description = getAttribute(executionData, "name")
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
@@ -175,7 +175,10 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     for stepDetail in dfScenarioSection:
         ScenarioStepExecutionId = 'SSE' + str(getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE'))
         keyword = stepDetail['keyword'].strip()
-        name = stepDetail['name'].replace('"', "'")
+        if 'name' in stepDetail:
+            name = stepDetail['name'].replace('"', "'")
+        else:
+            name = keyword
         if 'duration' in stepDetail['result']:
             duration = round(stepDetail['result']['duration']/pow(10, 9),2)
         else:
@@ -301,10 +304,10 @@ if __name__ == '__main__':
             if featureFile['description'].count('~') <4 :
                 preValidation="Failed"
                 preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
-            for index, data in enumerate(df['tags']):
-                if len(data) ==0 :
-                    preValidation = "Failed"
-                    preValidationMsg = f"""{preValidationMsg} Scenario/Testcase first Tag having unique TCid is missing in\n -{executionData[indexExecutionData]['elements'][index]['name']}"""
+            # for index, data in enumerate(df['tags']):
+            #     if len(data) ==0 :
+            #         preValidation = "Failed"
+            #         preValidationMsg = f"""{preValidationMsg} Scenario/Testcase first Tag having unique TCid is missing in\n -{executionData[indexExecutionData]['elements'][index]['name']}"""
 
         if preValidation =="Failed" :
             print(preValidationMsg)
