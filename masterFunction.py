@@ -6,7 +6,7 @@ from datetime import datetime
 import time
 import psycopg2
 
-postgresSQLinCloud = True
+postgresSQLinCloud = False
 
 config = {
   'user': 'postgres',
@@ -225,6 +225,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
 #_______________________________________________________________________________________
 
 def databaseCummulative(executionStartTime):
+#Update duration
     sqlUpdateScenario = f"""UPDATE scenario s SET duration = x.total
                         FROM (SELECT ScenarioExecutionId, SUM(duration) as total
                         FROM scenarioStep
@@ -234,6 +235,17 @@ def databaseCummulative(executionStartTime):
                         WHERE s.ScenarioExecutionId = x.ScenarioExecutionId;"""
 
     executeSQL(sqlUpdateScenario)
+#Update duration
+    sqlUpdateScenario = f"""UPDATE scenario s SET steps = x.total
+                        FROM (SELECT ScenarioExecutionId, count(duration) as total
+                        FROM scenarioStep
+                        where createdon >= '{executionStartTime.strftime("%Y-%m-%d %H:%M:%S")}'
+                        GROUP BY ScenarioExecutionId
+                        ) x 
+                        WHERE s.ScenarioExecutionId = x.ScenarioExecutionId;"""
+
+    executeSQL(sqlUpdateScenario)
+
 #Update Failed number
     sqlUpdateFeatureExecution=f"""UPDATE featureexecution FE SET failed = x.total, FailedDuration=x.failedDuration
                 FROM (

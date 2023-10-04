@@ -47,14 +47,17 @@ CREATE TABLE if not exists client (
   PRIMARY KEY (ClientId)
 );
 
-CREATE TABLE if not exists releases (
-  ReleaseId varchar(10) NOT NULL,
-  ApplicationId varchar(10) NOT NULL,
-  Description varchar(50) DEFAULT NULL,
-  GoLiveDate date NOT NULL,
-  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
-  CreatedBy varchar(50) DEFAULT NULL,
-  PRIMARY KEY (ReleaseId)
+CREATE TABLE clientsponsor (
+  ClientId varchar(10) NOT NULL,
+  SponsorId varchar(10) NOT NULL,
+  SponsorName varchar(50) NOT NULL,
+  Designation varchar(50) DEFAULT NULL,
+  Department varchar(10) DEFAULT NULL,
+  CreatedBy varchar(150) DEFAULT NULL,
+  CreatedOn datetime DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (SponsorId),
+  KEY FK_ClientSponsor_Client (ClientId),
+  CONSTRAINT FK_ClientSponsor_Client FOREIGN KEY (ClientId) REFERENCES client (ClientId)
 );
 
 CREATE TABLE if not exists releases (
@@ -192,7 +195,7 @@ INSERT INTO application (sponsorid,applicationid,applicationname,description,cre
 	 ('S1','A2','Tandam','','Info Origin'),
 	 ('S2','A3','MyExpense','','Info Origin'),
 	 ('S3','A4','IOS','','Info Origin'),
-	 ('S3','A5','DocGen','','Info Origin'),
+	 ('S3','A5','DocGen 21','','Info Origin'),
 	 ('S1','A6','Prolite','','Info Origin'),
 	 ('S2','A7','MySpend','','Info Origin'),
 	 ('S1','A8','Corso','','Info Origin');
