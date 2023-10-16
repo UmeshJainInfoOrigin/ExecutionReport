@@ -142,12 +142,15 @@ CREATE TABLE if not exists scenario (
   ScenarioId varchar(50) NOT NULL,
   ScenarioName varchar(500) DEFAULT NULL,
   Description varchar(1200) DEFAULT NULL,
+  Steps int DEFAULT '0',
   Duration decimal(18,2) DEFAULT '0.00',
   Status varchar(15) DEFAULT 'Skipped',
   tags varchar(75) NULL,
+  failedreasonid varchar(50) DEFAULT '0',
   CreatedBy varchar(50) DEFAULT NULL,
   CreatedOn timestamp(2) NULL DEFAULT CURRENT_TIMESTAMP,
-  PRIMARY KEY (ScenarioExecutionId,ScenarioId)
+  PRIMARY KEY (ScenarioExecutionId,ScenarioId),
+  CONSTRAINT FK_Scenario_FailedReasonId FOREIGN KEY (failedreasonid) REFERENCES FailedReason (reasonid)
 );
 
 CREATE TABLE if not exists scenariostep (
@@ -165,6 +168,16 @@ CREATE TABLE if not exists scenariostep (
   CONSTRAINT scenariostep_chk_1 CHECK (((Keyword = 'And') or (Keyword = 'and') or (Keyword = 'Then') or (Keyword = 'Or') or (Keyword = 'When') or (Keyword = 'Before') or (Keyword = 'After') or (Keyword = 'before') or (Keyword = 'after') or (Keyword = 'Given'))),
   CONSTRAINT scenariostep_chk_2 CHECK (((Status = 'Skipped') or (Status = 'skipped') or (Status = 'Passed') or (Status = 'passed') or (Status = 'Failed') or (Status = 'failed')))
 ); 
+
+CREATE TABLE if not exists FailedReason (
+  ReasonId varchar(10) NOT NULL,
+  Reason varchar(100) NOT NULL,
+  Description varchar(500) DEFAULT NULL,
+  CreatedOn timestamp(0) DEFAULT CURRENT_TIMESTAMP,
+  CreatedBy varchar(50) DEFAULT NULL,
+  PRIMARY KEY (ReasonId)
+);
+
 
 INSERT INTO client (clientid,clientname,description,createdby) VALUES
 	 ('C1','Swiss Re','','Info Origin'),
@@ -201,3 +214,9 @@ INSERT INTO application (sponsorid,applicationid,applicationname,description,cre
 	 ('S1','A8','Corso','','Info Origin');
 
 
+INSERT INTO failedreason (reasonid,reason,description,createdon,createdby) VALUES
+	 ('0','Passed',NULL,'2023-10-16 15:20:44',NULL),
+	 ('1','Environment','UAT/QA environment is down','2023-10-16 15:20:44',NULL),
+	 ('2','Test Data','Insufficient Test Data','2023-10-16 15:20:45',NULL),
+	 ('3','Automation Script','Improvement in Automation Script required','2023-10-16 15:20:45',NULL),
+	 ('4','Application Issue','Recent build has observation which can turn to defect','2023-10-16 15:20:45',NULL);
