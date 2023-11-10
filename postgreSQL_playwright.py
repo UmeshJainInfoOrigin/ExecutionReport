@@ -4,7 +4,7 @@ import json
 import os, getopt, sys
 from datetime import datetime
 import shutil
-from masterFunction import *
+from masterFunction_playwright import *
 
 def main(argv):
     inboundPath = os.getcwd() + "\\inboundJSONReports"

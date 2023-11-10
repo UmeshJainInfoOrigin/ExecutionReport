@@ -136,6 +136,7 @@ def featureTable(executionData):
         (applicationId, featureid, FeatureName, description, uri, CreatedBy)
         values ('{applicationId}','{featureId}' ,'{featureName}','{description}','{uri}','infoOrigin');"""
         #print ("sql-->", sqlInsertFeature)
+        
         executeSQL(sqlInsertFeature)
 
         tableImpactedRowCount['feature'] = tableImpactedRowCount['feature'] + 1
@@ -147,10 +148,16 @@ def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
     #description: C1~S1~A1~F1~R1~MenuVerifiedBy
     releaseId = getAttribute(executionData, "description").split('~')[4]
     df = pd.json_normalize(executionData,record_path='suites')
+    
     #df1= pd.json_normalize(executionData,record_path='stats')
-    #print('df=', df)
+    #print(df)
+    
+    totalScenario = 0
+    for eachspec in df['specs'][0]:
+        totalScenario = totalScenario +1 
+    
     if 'start_timestamp' in df:
-        print ('true', df['Title'][0])
+     #   print ('true', df['Title'][0])
         startTime = df['startTime'][0].replace('T',' ').replace('Z', ' ')
     else:
         startTime = fileModifiedTimeStamp
@@ -158,11 +165,13 @@ def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
     featureExecutionId = 'FE' + str(tableNextValDict['featureExecution'])
     tcDuration=1
     #print ("df['specs']", df['specs'])
-    totalScenario = df['specs'].count()
-    print('totalScenario', totalScenario)
+    #totalScenario = df['specs'].count()
+    #print('totalScenario', totalScenario)
     sqlInsertFeatureExecution = f"""Insert into featureexecution 
     (FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy,releaseId)
     values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin', '{releaseId}');"""
+    #print('featureExeutionSQL', sqlInsertFeatureExecution)
+    
     executeSQL(sqlInsertFeatureExecution)
     tableImpactedRowCount['featureExecution'] = tableImpactedRowCount['featureExecution'] + 1    
     tableNextValDict['featureExecution'] = tableNextValDict['featureExecution'] + 1  
@@ -171,27 +180,32 @@ def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
 
 def scenarioTable(executionData,featureExecutionId):
     df = pd.json_normalize(executionData,record_path='suites')
-    for index, fullScenarioName in enumerate(df['title'].tolist()):
+    #print('executionData-->Title', df['specs'][0])
+    #print('executionData-->Title', df)
+    #for index, fullScenarioName in enumerate(df['title'].tolist()):
+    for index, fullScenarioName in enumerate(df['specs'][0]):
         #scenarioExecutionId = 'SE' + str(getNextVal('scenario', 'scenarioExecutionId', 'SE'))
+        #print('fullScenarioName-->', fullScenarioName['title'])
         scenarioExecutionId = 'SE' +  str(tableNextValDict['scenario'])
         #scenarioId = df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags'
         tags = []
         # for i in df['tags'][index]:
         #     tags.append(i['name'])
-    
-        scenarioId = fullScenarioName.split("~")[0] if "~" in fullScenarioName else 'TC_Auto'
-        scenarioName = fullScenarioName.split("~")[1] if "~" in fullScenarioName else 'Scenario Name_Auto'
+        
+        scenarioId = fullScenarioName['title'].split("~")[0] if "~" in fullScenarioName['title'] else 'TC_Auto'
+        scenarioName = fullScenarioName['title'].split("~")[1] if "~" in fullScenarioName['title'] else 'Scenario Name_Auto'
         #description= df['description'][index]
         description = ""
-        duration=13
+        duration=1
         sqlInsertScenario = f"""Insert into scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy, tags)
         values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin', '{",".join(tags)}');"""
-
+        print('sqlInsertScenario-->', sqlInsertScenario)
         executeSQL(sqlInsertScenario)
 
         dfScenarioSectionDF = df['specs'][0][index]['tests'][0]['results'][0]['steps']
-        print('dfScenarioSectionDF',index, dfScenarioSectionDF)
+        #print('dfScenarioSectionDF',index, dfScenarioSectionDF)
+        
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
         tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1  
         tableNextValDict['scenario'] = tableNextValDict['scenario'] + 1       
@@ -208,14 +222,17 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
             name = stepDetail['title'].replace('"', "'")
         else:
             name = keyword
+        #print('stepDetailduration-->', stepDetail['duration'])
         if 'duration' in stepDetail:
-            duration = round(stepDetail['duration']/pow(10, 9),2)
+            
+            duration = round(stepDetail['duration']/pow(10, 3),2)
         else:
             duration = 0
         #status = stepDetail['result']['status']
         status = 'passed'
         if "error" in stepDetail :
-            errorMessage = stepDetail['error'].replace('"',"'")
+            errorMessage = stepDetail['error']['message'].replace('"',"'")
+            status = 'failed'
         else:
             errorMessage = " "
         if status.upper() != 'passed'.upper() and scenarioStatusFlag:
@@ -223,7 +240,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
         sqlInsertScenarioStep = f"""Insert into scenariostep 
                 (ScenarioStepExecutionId,ScenarioExecutionId, ScenarioId, Keyword, Name, Duration, Status, ErrorMessage,CreatedBy)
             values ('{ScenarioStepExecutionId}','{scenarioExecutionId}' ,'{scenarioId}','{keyword}','{name.replace("'", "''")}',{duration}, '{status}', '{errorMessage.replace("'", "''")}' ,'infoOrigin')"""
-        #print(sqlInsertScenarioStep)
+        #print('sqlInsertScenarioStep--', sqlInsertScenarioStep)
         executeSQL(sqlInsertScenarioStep)
         tableImpactedRowCount['scenarioStep'] = tableImpactedRowCount['scenarioStep'] + 1   
         tableNextValDict['scenarioStep'] = tableNextValDict['scenarioStep'] + 1 
