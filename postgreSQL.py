@@ -42,10 +42,19 @@ if __name__ == '__main__':
         fileModifiedTimeStamp=getFileModifiedTimeStamp(inboundPath + '/' + cucumberTestRunFile)
         os.chdir(inboundPath)
         executionData = json.load(open(cucumberTestRunFile))
+        if isinstance(executionData, dict) and 'suites' in executionData:
+            reportFrom = 'Playwright'
+            recordPath = 'suites'
+            coreData = executionData["suites"]
+        if isinstance(executionData, list) and 'elements' in executionData[0]:
+            reportFrom = 'Selenium'
+            recordPath = 'elements'
+            coreData = executionData
+
         preValidation= "Passed"
         preValidationMsg = cucumberTestRunFile + " is not processed as\n"
-        for indexExecutionData, featureFile in enumerate(executionData):
-            df = pd.json_normalize(featureFile,record_path='elements')
+        for indexExecutionData, featureFile in enumerate(coreData):
+            df = pd.json_normalize(featureFile,record_path=recordPath)
             if featureFile['description'].count('~') <4 :
                 preValidation="Failed"
                 preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
@@ -57,13 +66,10 @@ if __name__ == '__main__':
         if preValidation =="Failed" :
             print(preValidationMsg)
         else:
-            processJSON(cucumberTestRunFile,executionSQLStartTime,fileModifiedTimeStamp)
+            processJSON(cucumberTestRunFile,executionSQLStartTime,fileModifiedTimeStamp, reportFrom)
             print("Successfully processed file...", cucumberTestRunFile)
             printRowsAdded()
             shutil.move( inboundPath + "/" + cucumberTestRunFile, processedPath +'/' + cucumberTestRunFile,)
 
     executionEndTime = datetime.now()
     print('Total Execution Time=', executionEndTime - executionStartTime)
-
-
-

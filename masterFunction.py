@@ -7,6 +7,7 @@ import time
 import psycopg2
 
 postgresSQLinCloud = False
+reportFrom = "Selenium"
 
 config = {
   'user': 'postgres',
@@ -121,9 +122,19 @@ def getNextValAllTable():
 
 def featureTable(executionData):
     #C5~S4~A9~F2~R1~Save Education
-    clientId,sponsorId, applicationId,featureId,releaseId,featureName = getAttribute(executionData, "description").split('~')
-    uri = getAttribute(executionData, "uri").replace("\\","\\\\")
-    description = getAttribute(executionData, "name")
+    
+    match reportFrom:
+        case "Selenium" | "Cypress":
+            clientId,sponsorId, applicationId,featureId,releaseId,featureName = getAttribute(executionData, "description").split('~')
+            uri = getAttribute(executionData, "uri").replace("\\","\\\\")
+            description = getAttribute(executionData, "name")
+        case "Playwright":
+            clientId,sponsorId, applicationId,featureId,releaseId,featureName = getAttribute(executionData, "description").split('~')
+            uri = getAttribute(executionData, "title").replace("\\","\\\\")
+            description =  "description" #getAttribute(executionData, "suites")
+        case default:
+            print( "in default feature")
+
     sqlSelectFeature=f"Select * from Feature where ApplicationId='{applicationId}' and FeatureId='{featureId}';"
     #result = executeSQL(sqlSelectFeature)
     executeSQL(sqlSelectFeature)
@@ -144,15 +155,28 @@ def featureTable(executionData):
 def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
     #description: C1~S1~A1~F1~R1~MenuVerifiedBy
     releaseId = getAttribute(executionData, "description").split('~')[4]
-    df = pd.json_normalize(executionData,record_path='elements')
+    
+    totalScenario = 0
+    match reportFrom:
+        case "Selenium" | "Cypress":
+            df = pd.json_normalize(executionData,record_path='elements')
+            totalScenario = df['steps'].count()
+            timeStampLabel = "start_timestamp"
+        case "Playwright":
+            df = pd.json_normalize(executionData,record_path='suites')
+            for eachspec in df['specs'][0]:
+                totalScenario = totalScenario +1
+                timeStampLabel ="startTime"         
+        case default:
+            print( "in default feature")
+
     if 'start_timestamp' in df:
-        startTime = df['start_timestamp'][0].replace('T',' ').replace('Z', ' ')
+        startTime = df[timeStampLabel][0].replace('T',' ').replace('Z', ' ')
     else:
         startTime = fileModifiedTimeStamp
     #featureExecutionId = 'FE' + str(getNextVal('featureExecution', 'featureExecutionId', 'FE'))
     featureExecutionId = 'FE' + str(tableNextValDict['featureExecution'])
     tcDuration=1
-    totalScenario = df['steps'].count()
     sqlInsertFeatureExecution = f"""Insert into featureexecution 
     (FeatureExecutionId, featureid, TotalDuration, TotalScenario, StartTime, CreatedBy,releaseId)
     values ('{featureExecutionId}','{featureId}' ,{tcDuration},{totalScenario},'{startTime}','infoOrigin', '{releaseId}');"""
@@ -163,18 +187,37 @@ def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
 #_______________________________________________________________________________________
 
 def scenarioTable(executionData,featureExecutionId):
-    df = pd.json_normalize(executionData,record_path='elements')
-    for index, fullScenarioName in enumerate(df['name'].tolist()):
+    match reportFrom:
+        case "Selenium" | "Cypress":
+            df = pd.json_normalize(executionData,record_path="elements")
+            coreData = df['name'].tolist()
+        case "Playwright":
+            df = pd.json_normalize(executionData,record_path="suites")
+            coreData = df['specs'][0]
+        case default:
+            print( "Error not a Compatible JSON")
+    
+    for index, fullScenarioName in enumerate(coreData):
         #scenarioExecutionId = 'SE' + str(getNextVal('scenario', 'scenarioExecutionId', 'SE'))
         scenarioExecutionId = 'SE' +  str(tableNextValDict['scenario'])
         #scenarioId = df['tags'][index][0]['name'] if len(df['tags'][index])>0 else 'notags'
         tags = []
-        for i in df['tags'][index]:
-            tags.append(i['name'])
+        match reportFrom:
+            case "Selenium" | "Cypress":
+                for i in df['tags'][index]:
+                    tags.append(i['name'])
+                scenarioId = fullScenarioName.split("~")[0] if "~" in fullScenarioName else 'TC_Auto'
+                scenarioName = fullScenarioName.split("~")[1] if "~" in fullScenarioName else 'Scenario Name_Auto'
+                description= df['description'][index]
+                dfScenarioSectionDF = df['steps'][index]
+            case "Playwright":
+                scenarioId = fullScenarioName['title'].split("~")[0] if "~" in fullScenarioName['title'] else 'TC_Auto'
+                scenarioName = fullScenarioName['title'].split("~")[1] if "~" in fullScenarioName['title'] else 'Scenario Name_Auto'
+                description = ""
+                dfScenarioSectionDF = df['specs'][0][index]['tests'][0]['results'][0]['steps']
+
     
-        scenarioId = fullScenarioName.split("~")[0] if "~" in fullScenarioName else 'TC_Auto'
-        scenarioName = fullScenarioName.split("~")[1] if "~" in fullScenarioName else 'Scenario Name_Auto'
-        description= df['description'][index]
+        
         duration=1
         sqlInsertScenario = f"""Insert into scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy, tags)
@@ -182,7 +225,7 @@ def scenarioTable(executionData,featureExecutionId):
 
         executeSQL(sqlInsertScenario)
 
-        dfScenarioSectionDF = df['steps'][index]
+        
         scenarioStepTable(dfScenarioSectionDF,scenarioExecutionId,scenarioId)
         tableImpactedRowCount['scenario'] = tableImpactedRowCount['scenario'] + 1  
         tableNextValDict['scenario'] = tableNextValDict['scenario'] + 1       
@@ -193,20 +236,44 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
     for stepDetail in dfScenarioSection:
         #ScenarioStepExecutionId = 'SSE' + str(getNextVal('scenariostep', 'ScenarioStepExecutionId', 'SSE'))
         ScenarioStepExecutionId = 'SSE' + str(tableNextValDict['scenarioStep'])
-        keyword = stepDetail['keyword'].strip()
-        if 'name' in stepDetail:
-            name = stepDetail['name'].replace('"', "'")
-        else:
-            name = keyword
-        if 'duration' in stepDetail['result']:
-            duration = round(stepDetail['result']['duration']/pow(10, 9),2)
-        else:
-            duration = 0
-        status = stepDetail['result']['status']
-        if "error_message" in stepDetail['result'] :
-            errorMessage = stepDetail['result']['error_message'].replace('"',"'")
-        else:
-            errorMessage = " "
+        match reportFrom:
+            case "Selenium" | "Cypress":
+                keyword = stepDetail['keyword'].strip()
+                if 'name' in stepDetail:
+                    name = stepDetail['name'].replace('"', "'")
+                else:
+                    name = keyword
+                if 'duration' in stepDetail['result']:
+                    duration = round(stepDetail['result']['duration']/pow(10, 9),2)
+                else:
+                    duration = 0
+                status = stepDetail['result']['status']
+                if "error_message" in stepDetail['result'] :
+                    errorMessage = stepDetail['result']['error_message'].replace('"',"'")
+                else:
+                    errorMessage = " "
+
+
+            case "Playwright":
+                keyword = "Given"
+                if 'title' in stepDetail:
+                    name = stepDetail['title'].replace('"', "'")
+                else:
+                    name = keyword
+                if 'duration' in stepDetail:
+                    duration = round(stepDetail['duration']/pow(10, 3),2)
+                else:
+                    duration = 0
+        
+                status = 'passed'
+
+                if "error" in stepDetail :
+                    errorMessage = stepDetail['error']['message'].replace('"',"'")
+                    status = 'failed'
+                else:
+                    errorMessage = " "
+
+        
         if status.upper() != 'passed'.upper() and scenarioStatusFlag:
             scenarioStatusFlag = False
         sqlInsertScenarioStep = f"""Insert into scenariostep 
@@ -278,9 +345,20 @@ def databaseCummulative(executionStartTime):
                 WHERE FE.FeatureExecutionId = x.FeatureExecutionId ;"""
     executeSQL(sqlUpdateFeatureExecution)
 #_______________________________________________________________________________________
-def processJSON(cucumberTestRunFile, executionStartTime,fileModifiedTimeStamp):
+def processJSON(cucumberTestRunFile, executionStartTime,fileModifiedTimeStamp,getReportFrom):
     executionData = json.load(open(cucumberTestRunFile))
-    for indexExecutionData, featureFile in enumerate(executionData):
+    global reportFrom
+    reportFrom = getReportFrom
+    print("reportFrom", reportFrom)
+    match reportFrom:
+        case "Selenium" | "Cypress":
+            coreData = executionData
+        case "Playwright":
+            coreData = executionData["suites"]
+        case default:
+            print( "Error not a Compatible JSON")
+
+    for indexExecutionData, featureFile in enumerate(coreData):
         featureId = featureTable(featureFile)
         featureExecutionId = featureExecutionTable(featureFile,featureId,fileModifiedTimeStamp)
         scenarioTable(featureFile,featureExecutionId)
