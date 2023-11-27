@@ -54,21 +54,21 @@
   },
   "suites": [
     {
-      "title": "features\\globalsqaLogin.feature.spec.js",
-      "description": "C1~S1~A9~F1~R1~MenuVerifiedBy",
-      "file": "features/globalsqaLogin.feature.spec.js",
+      "title": "parent-Title",
+      "description": "C1~S1~A9~F1~R1~Playwright1",
+      "file": "suite-File",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Login Page",
-          "file": "features/globalsqaLogin.feature.spec.js",
-          "line": 4,
-          "column": 6,
+          "title": "Login Registraion;Description:C1~S1~A9~F1~R1~Playwright1",
+          "file": "file",
+          "line": 40,
+          "column": 60,
           "specs": [
             {
-              "title": "COS1~Username is required",
+              "title": "COS1~Username is required~@Functional @Unit",
               "ok": true,
               "tags": [],
               "tests": [
@@ -112,8 +112,9 @@
               "line": 6,
               "column": 7
             },
+           
             {
-              "title": "COS2~Password is mandatory",
+              "title": "COS3~fields is mandatory",
               "ok": true,
               "tags": [],
               "tests": [
@@ -141,7 +142,7 @@
                       "retry": 0,
                       "steps": [
                         {
-                          "title": "user type 'Info' in '#username' textbox",
+                          "title": "'#username' and '#password' textbox",
                           "duration": 2570
                         }
                       ],
@@ -163,20 +164,20 @@
     },
     {
       "title": "features\\homepage.feature.spec.js",
-      "description": "C1~S1~A9~F1~R1~MenuVerifiedBy",
+      "description": "C1~S1~A9~F2~R1~playwright2",
       "file": "features/homepage.feature.spec.js",
       "column": 0,
       "line": 0,
       "specs": [],
       "suites": [
         {
-          "title": "Home Page",
+          "title": "Feature2;Description:C1~S1~A9~F2~R1~playwright2",
           "file": "features/homepage.feature.spec.js",
           "line": 4,
           "column": 6,
           "specs": [
             {
-              "title": "Check title",
+              "title": "TC01~Check title",
               "ok": true,
               "tags": [],
               "tests": [
@@ -222,7 +223,7 @@
               "column": 7
             },
             {
-              "title": "Check get started",
+              "title": "TC02~Check get started",
               "ok": false,
               "tags": [],
               "tests": [
@@ -306,7 +307,7 @@
               "column": 7
             },
             {
-              "title": "Read Excel Sheet",
+              "title": "TC03~Read Excel Sheet",
               "ok": true,
               "tags": [],
               "tests": [

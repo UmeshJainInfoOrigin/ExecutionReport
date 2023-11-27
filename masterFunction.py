@@ -129,7 +129,10 @@ def featureTable(executionData):
             uri = getAttribute(executionData, "uri").replace("\\","\\\\")
             description = getAttribute(executionData, "name")
         case "Playwright":
-            clientId,sponsorId, applicationId,featureId,releaseId,featureName = getAttribute(executionData, "description").split('~')
+            description = getAttribute(getAttribute(executionData, "suites")[0],'title')
+            description = description.split(";")[1]
+            description = description.split(":")[1]
+            clientId,sponsorId, applicationId,featureId,releaseId,featureName = description.split('~')
             uri = getAttribute(executionData, "title").replace("\\","\\\\")
             description =  "description" #getAttribute(executionData, "suites")
         case default:
@@ -213,6 +216,9 @@ def scenarioTable(executionData,featureExecutionId):
             case "Playwright":
                 scenarioId = fullScenarioName['title'].split("~")[0] if "~" in fullScenarioName['title'] else 'TC_Auto'
                 scenarioName = fullScenarioName['title'].split("~")[1] if "~" in fullScenarioName['title'] else 'Scenario Name_Auto'
+                scenarioTags = fullScenarioName['title'].split("~")[2] if ("~" in fullScenarioName['title'] and len(fullScenarioName['title'].split("~"))>2) else ''
+                for eachTag in scenarioTags.split(' '):
+                    tags.append(eachTag)
                 description = ""
                 dfScenarioSectionDF = df['specs'][0][index]['tests'][0]['results'][0]['steps']
 
@@ -222,7 +228,6 @@ def scenarioTable(executionData,featureExecutionId):
         sqlInsertScenario = f"""Insert into scenario 
         (ScenarioExecutionId, FeatureExecutionId, ScenarioId, ScenarioName, Description, Duration, CreatedBy, tags)
         values ('{scenarioExecutionId}','{featureExecutionId}' ,'{scenarioId}','{scenarioName}','{description}',{duration},'infoOrigin', '{",".join(tags)}');"""
-
         executeSQL(sqlInsertScenario)
 
         
