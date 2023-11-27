@@ -169,7 +169,7 @@ def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
             df = pd.json_normalize(executionData,record_path='suites')
             for eachspec in df['specs'][0]:
                 totalScenario = totalScenario +1
-                timeStampLabel ="startTime"         
+            timeStampLabel ="startTime"         
         case default:
             print( "in default feature")
 
@@ -261,6 +261,7 @@ def scenarioStepTable(dfScenarioSection,scenarioExecutionId,scenarioId):
 
             case "Playwright":
                 keyword = "Given"
+                keyword = stepDetail['title'].split(" ")[0]
                 if 'title' in stepDetail:
                     name = stepDetail['title'].replace('"', "'")
                 else:
