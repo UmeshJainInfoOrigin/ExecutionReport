@@ -157,15 +157,21 @@ def featureTable(executionData):
 
 def featureExecutionTable(executionData,featureId,fileModifiedTimeStamp):
     #description: C1~S1~A1~F1~R1~MenuVerifiedBy
-    releaseId = getAttribute(executionData, "description").split('~')[4]
     
     totalScenario = 0
     match reportFrom:
         case "Selenium" | "Cypress":
+            releaseId = getAttribute(executionData, "description").split('~')[4]
             df = pd.json_normalize(executionData,record_path='elements')
             totalScenario = df['steps'].count()
             timeStampLabel = "start_timestamp"
         case "Playwright":
+            description = getAttribute(getAttribute(executionData, "suites")[0],'title')
+            description = description.split(";")[1]
+            description = description.split(":")[1]
+    
+            releaseId = description.split('~')[4]
+
             df = pd.json_normalize(executionData,record_path='suites')
             for eachspec in df['specs'][0]:
                 totalScenario = totalScenario +1
