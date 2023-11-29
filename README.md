@@ -81,3 +81,14 @@ use this command SET SQL_SAFE_UPDATES = 0;
     - Upon successful ingestion all .JSON will be moved to processedJSONReports directory
 * Power BI
     - Based on your role, access are available in dashboard of power BI using below URL
+
+# Technologies Used
+    - Database
+        * Postgres
+        * mysql
+    - Ingestion Code
+        * Python
+    - Data files
+        * JSON
+    - Reporting
+        * Power BI
