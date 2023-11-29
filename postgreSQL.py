@@ -55,9 +55,9 @@ if __name__ == '__main__':
         preValidationMsg = cucumberTestRunFile + " is not processed as\n"
         for indexExecutionData, featureFile in enumerate(coreData):
             df = pd.json_normalize(featureFile,record_path=recordPath)
-            if featureFile['description'].count('~') <4 :
-                preValidation="Failed"
-                preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
+            # if featureFile['description'].count('~') <4 :
+            #     preValidation="Failed"
+            #     preValidationMsg = f"""{preValidationMsg} Feature Description is missing in \n #{featureFile['uri']} \n"""
             # for index, data in enumerate(df['tags']):
             #     if len(data) ==0 :
             #         preValidation = "Failed"
